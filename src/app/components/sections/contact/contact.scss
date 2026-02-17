@@ -3,6 +3,7 @@
 .contact {
   padding: 5rem 0;
   background: var(--bg-secondary);
+  overflow-x: hidden;
 
   @media (max-width: 768px) {
     padding: 3rem 0;

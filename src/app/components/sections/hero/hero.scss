@@ -6,7 +6,8 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  overflow-y: visible;
   background: var(--bg-primary);
 }
 
