@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: var(--bg-primary);
 }
 
@@ -161,6 +161,8 @@
   gap: 0.5rem;
   color: var(--text-secondary);
   animation: bounce 2s infinite;
+  z-index: 10;
+  opacity: 1;
 
   span {
     font-size: 0.9rem;

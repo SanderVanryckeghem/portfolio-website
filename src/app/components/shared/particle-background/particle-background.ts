@@ -26,6 +26,7 @@ interface Particle {
       height: 100%;
       pointer-events: none;
       opacity: 0.5;
+      z-index: 1;
     }
   `]
 })
