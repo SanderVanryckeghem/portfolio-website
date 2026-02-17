@@ -32,30 +32,44 @@ jobs:
         run: npm ci
 
       - name: Create environment file
+        env:
+          EMAILJS_SERVICE_ID: ${{ secrets.EMAILJS_SERVICE_ID }}
+          EMAILJS_TEMPLATE_ID: ${{ secrets.EMAILJS_TEMPLATE_ID }}
+          EMAILJS_PUBLIC_KEY: ${{ secrets.EMAILJS_PUBLIC_KEY }}
         run: |
-          cat > src/environments/environment.ts << 'EOF'
+          cat > src/environments/environment.ts << EOF
           export const environment = {
             production: false,
             emailjs: {
-              serviceId: '${{ secrets.EMAILJS_SERVICE_ID }}',
-              templateId: '${{ secrets.EMAILJS_TEMPLATE_ID }}',
-              publicKey: '${{ secrets.EMAILJS_PUBLIC_KEY }}'
+              serviceId: '${EMAILJS_SERVICE_ID}',
+              templateId: '${EMAILJS_TEMPLATE_ID}',
+              publicKey: '${EMAILJS_PUBLIC_KEY}'
             }
           };
           EOF
-          cat > src/environments/environment.prod.ts << 'EOF'
+          cat > src/environments/environment.prod.ts << EOF
           export const environment = {
             production: true,
             emailjs: {
-              serviceId: '${{ secrets.EMAILJS_SERVICE_ID }}',
-              templateId: '${{ secrets.EMAILJS_TEMPLATE_ID }}',
-              publicKey: '${{ secrets.EMAILJS_PUBLIC_KEY }}'
+              serviceId: '${EMAILJS_SERVICE_ID}',
+              templateId: '${EMAILJS_TEMPLATE_ID}',
+              publicKey: '${EMAILJS_PUBLIC_KEY}'
             }
           };
           EOF
 
       - name: Build Angular app
-        run: npm run build -- --base-href /portfolio-website/
+        run: npm run build -- --base-href /
+
+      - name: Prepare deployment files
+        run: |
+          cd dist/portfolio-website/browser
+          # Ensure .nojekyll exists
+          touch .nojekyll
+          # Copy index.html to 404.html for SPA routing
+          cp index.html 404.html
+          # Create CNAME file for custom domain
+          echo "sandervanryckeghem.be" > CNAME
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
