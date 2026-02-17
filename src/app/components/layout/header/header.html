@@ -1,1 +1,62 @@
-<p>header works!</p>
+<header [class.scrolled]="isScrolled" class="header">
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-wrapper">
+        <!-- Logo -->
+        <div class="nav-logo" (click)="navigateToSection('home')">
+          <span class="logo-text gradient-text">SV</span>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <ul class="nav-links desktop-nav">
+          @for (link of navLinks; track link.href) {
+            <li>
+              <a
+                [class.active]="activeSection === link.href"
+                (click)="navigateToSection(link.href)"
+                class="nav-link">
+                {{link.label}}
+              </a>
+            </li>
+          }
+        </ul>
+
+        <!-- Theme Toggle & Mobile Menu -->
+        <div class="nav-actions">
+          <button
+            class="theme-toggle"
+            (click)="toggleTheme()"
+            [title]="(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'">
+            <i [ngClass]="(isDarkMode$ | async) ? 'fas fa-bolt' : 'fas fa-moon'"></i>
+          </button>
+
+          <button
+            class="mobile-menu-toggle"
+            (click)="toggleMobileMenu()"
+            [class.active]="isMobileMenuOpen">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="isMobileMenuOpen">
+    <ul class="mobile-nav-links">
+      @for (link of navLinks; track link.href) {
+        <li>
+          <a
+            [class.active]="activeSection === link.href"
+            (click)="navigateToSection(link.href)"
+            class="mobile-nav-link">
+            <i [class]="link.icon"></i>
+            <span>{{link.label}}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</header>

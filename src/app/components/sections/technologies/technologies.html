@@ -1,1 +1,38 @@
-<p>technologies works!</p>
+<section class="technologies" id="technologies">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Technologies</h2>
+      <p class="section-subtitle">The tools and frameworks I work with</p>
+    </div>
+
+    <div class="filter-tabs">
+      <button
+        class="filter-tab"
+        [class.active]="selectedCategory === 'All'"
+        (click)="filterByCategory('All')">
+        All
+      </button>
+      @for (category of categories; track category) {
+        <button
+          class="filter-tab"
+          [class.active]="selectedCategory === category"
+          (click)="filterByCategory(category)">
+          {{category}}
+        </button>
+      }
+    </div>
+
+    <div class="tech-grid">
+      @for (tech of filteredTechnologies; track tech.name) {
+        <div
+          class="tech-card"
+          [style.--tech-color]="tech.color">
+          <div class="tech-icon">
+            <i [class]="tech.icon"></i>
+          </div>
+          <h4 class="tech-name">{{tech.name}}</h4>
+        </div>
+      }
+    </div>
+  </div>
+</section>

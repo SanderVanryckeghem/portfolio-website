@@ -1,0 +1,68 @@
+@use '../../../styles/variables';
+
+.navigation {
+  &.mobile {
+    .nav-list {
+      flex-direction: column;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      width: 100%;
+
+      i {
+        width: 20px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  transition: color var(--transition-base);
+  cursor: pointer;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width var(--transition-base);
+  }
+
+  &:hover,
+  &.active {
+    color: var(--accent);
+
+    &::after {
+      width: 100%;
+    }
+  }
+
+  span {
+    display: inline-block;
+  }
+}

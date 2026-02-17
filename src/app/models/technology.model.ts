@@ -11,8 +11,7 @@ export interface Technology {
 export enum TechCategory {
   FRONTEND = 'Frontend',
   BACKEND = 'Backend',
-  DATABASE = 'Database',
-  DEVOPS = 'DevOps',
-  TOOLS = 'Tools',
-  OTHER = 'Other'
+  MOBILE = 'Mobile',
+  DESIGN = 'Design',
+  TOOLS = 'Tools'
 }

@@ -1,0 +1,66 @@
+@if (isOpen && project) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-container">
+      <button class="modal-close" (click)="close()">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="modal-content">
+        <div class="modal-image">
+          <img [src]="getProjectImage()" [alt]="project.title">
+          @if (project.featured) {
+            <span class="featured-badge">
+              <i class="fas fa-star"></i>
+              Featured
+            </span>
+          }
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-header">
+            <h2 class="modal-title">{{project.title}}</h2>
+            @if (project.category) {
+              <span class="category-badge">{{project.category}}</span>
+            }
+          </div>
+
+          @if (project.completedDate) {
+            <p class="project-date">
+              <i class="fas fa-calendar-alt"></i>
+              Completed: {{formatDate(project.completedDate)}}
+            </p>
+          }
+
+          <div class="project-description">
+            <h3>About this project</h3>
+            <p>{{project.longDescription || project.description}}</p>
+          </div>
+
+          <div class="project-technologies">
+            <h3>Technologies Used</h3>
+            <div class="tech-list">
+              @for (tech of project.technologies; track tech) {
+                <span class="tech-badge">{{tech}}</span>
+              }
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            @if (project.demoUrl) {
+              <a [href]="project.demoUrl" target="_blank" class="action-btn primary">
+                <i class="fas fa-external-link-alt"></i>
+                View Live Demo
+              </a>
+            }
+            @if (project.githubUrl) {
+              <a [href]="project.githubUrl" target="_blank" class="action-btn secondary">
+                <i class="fab fa-github"></i>
+                View Source Code
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

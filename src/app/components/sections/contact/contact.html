@@ -1,1 +1,139 @@
-<p>contact works!</p>
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Get In Touch</h2>
+      <p class="section-subtitle">Let's build something great together</p>
+    </div>
+
+    <div class="contact-wrapper">
+      <!-- Contact Form -->
+      <div class="contact-form">
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder=" "
+              [class.error]="contactForm.get('name')?.touched && contactForm.get('name')?.invalid">
+            <label for="name">Name</label>
+            @if (contactForm.get('name')?.touched && contactForm.get('name')?.invalid) {
+              <span class="error-message">
+                {{getErrorMessage('name')}}
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder=" "
+              [class.error]="contactForm.get('email')?.touched && contactForm.get('email')?.invalid">
+            <label for="email">Email</label>
+            @if (contactForm.get('email')?.touched && contactForm.get('email')?.invalid) {
+              <span class="error-message">
+                {{getErrorMessage('email')}}
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              id="subject"
+              formControlName="subject"
+              placeholder=" "
+              [class.error]="contactForm.get('subject')?.touched && contactForm.get('subject')?.invalid">
+            <label for="subject">Subject</label>
+            @if (contactForm.get('subject')?.touched && contactForm.get('subject')?.invalid) {
+              <span class="error-message">
+                {{getErrorMessage('subject')}}
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <textarea
+              id="message"
+              formControlName="message"
+              rows="5"
+              placeholder=" "
+              [class.error]="contactForm.get('message')?.touched && contactForm.get('message')?.invalid"></textarea>
+            <label for="message">Message</label>
+            @if (contactForm.get('message')?.touched && contactForm.get('message')?.invalid) {
+              <span class="error-message">
+                {{getErrorMessage('message')}}
+              </span>
+            }
+          </div>
+
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="contactForm.invalid || isSubmitting || isRateLimited">
+            @if (isRateLimited) {
+              <span>
+                <i class="fas fa-clock"></i>
+                Wait {{cooldownRemaining}}
+              </span>
+            } @else if (isSubmitting) {
+              <span>
+                <i class="fas fa-spinner fa-spin"></i>
+                Sending...
+              </span>
+            } @else {
+              <span>
+                <i class="fas fa-paper-plane"></i>
+                Send Message
+              </span>
+            }
+          </button>
+
+          @if (submitMessage) {
+            <div class="submit-message" [class.success]="submitSuccess" [class.error]="!submitSuccess">
+              {{submitMessage}}
+            </div>
+          }
+        </form>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="contact-info">
+        <div class="info-cards">
+          @for (info of contactInfo; track info.label) {
+            <div class="info-card">
+              <div class="info-icon">
+                <i [class]="info.icon"></i>
+              </div>
+              <div class="info-content">
+                <h4>{{info.label}}</h4>
+                @if (info.link) {
+                  <a [href]="info.link">{{info.value}}</a>
+                } @else {
+                  <p>{{info.value}}</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Social Links -->
+        <div class="social-section">
+          <h3>Follow me on social media</h3>
+          <app-social-links
+            [social]="developer?.social"
+            [email]="developer?.email">
+          </app-social-links>
+        </div>
+
+        <!-- Map or Additional Info -->
+        <div class="additional-info">
+          <p>Working for Axxes IT Consultancy.</p>
+          <p>Response time within 24 hours.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

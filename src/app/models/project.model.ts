@@ -14,8 +14,5 @@ export interface Project {
 
 export enum ProjectCategory {
   WEB_APP = 'Web Application',
-  MOBILE_APP = 'Mobile Application',
-  DESIGN = 'Design',
-  OPEN_SOURCE = 'Open Source',
-  OTHER = 'Other'
+  MOBILE_APP = 'Mobile Application'
 }

@@ -1,1 +1,17 @@
-<p>navigation works!</p>
+<nav class="navigation" [class.mobile]="isMobile">
+  <ul class="nav-list">
+    @for (link of navLinks; track link.href) {
+      <li class="nav-item">
+        <a
+          [class.active]="activeSection === link.href"
+          (click)="onNavigate(link.href)"
+          class="nav-link">
+          @if (isMobile) {
+            <i [class]="link.icon"></i>
+          }
+          <span>{{link.label}}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

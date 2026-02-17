@@ -1,1 +1,37 @@
-<p>projects works!</p>
+<section class="projects" id="projects">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">My Projects</h2>
+      <p class="section-description">
+        A selection of my recent work and personal projects
+      </p>
+    </div>
+
+    <div class="filter-buttons">
+      @for (category of categories; track category) {
+        <button
+          [class.active]="selectedCategory === category"
+          (click)="filterProjects(category)"
+          class="filter-btn">
+          {{category}}
+        </button>
+      }
+    </div>
+
+    <div class="projects-grid">
+      @for (project of filteredProjects; track project.id) {
+        <app-project-card
+          [project]="project"
+          (viewDetails)="openProjectModal($event)"
+          class="project-card">
+        </app-project-card>
+      }
+    </div>
+  </div>
+</section>
+
+<app-project-modal
+  [project]="selectedProject"
+  [isOpen]="isModalOpen"
+  (closeModal)="closeProjectModal()">
+</app-project-modal>

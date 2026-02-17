@@ -1,1 +1,60 @@
-<p>project-card works!</p>
+<div class="card" (click)="onViewDetails()">
+  <div class="card-image">
+    <img [src]="getProjectImage()" [alt]="project.title">
+    @if (project.githubUrl) {
+      <a
+        [href]="project.githubUrl"
+        target="_blank"
+        class="github-link"
+        (click)="$event.stopPropagation()"
+        title="View on GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+    }
+    <div class="card-overlay">
+      <button class="view-btn" (click)="onViewDetails(); $event.stopPropagation()">
+        <i class="fas fa-eye"></i>
+        <span>View Details</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-content">
+    <h3 class="card-title">{{project.title}}</h3>
+    <p class="card-description">{{project.description}}</p>
+
+    <div class="card-tech">
+      @for (tech of project.technologies.slice(0, 3); track tech) {
+        <span class="tech-badge">
+          {{tech}}
+        </span>
+      }
+      @if (project.technologies.length > 3) {
+        <span class="tech-badge more">
+          +{{project.technologies.length - 3}}
+        </span>
+      }
+    </div>
+
+    <div class="card-actions">
+      @if (project.demoUrl) {
+        <a
+          [href]="project.demoUrl"
+          target="_blank"
+          class="action-btn primary">
+          <i class="fas fa-external-link-alt"></i>
+          Live Demo
+        </a>
+      }
+      @if (project.githubUrl) {
+        <a
+          [href]="project.githubUrl"
+          target="_blank"
+          class="action-btn secondary">
+          <i class="fab fa-github"></i>
+          Code
+        </a>
+      }
+    </div>
+  </div>
+</div>
