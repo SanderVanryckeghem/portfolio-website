@@ -181,13 +181,26 @@
 }
 
 @media (max-width: 768px) {
+  .hero-content {
+    padding-bottom: 6rem;
+  }
+
   .hero-buttons {
     flex-direction: column;
     align-items: center;
+    margin-bottom: 2rem;
 
     .btn {
       width: 250px;
       justify-content: center;
     }
+  }
+
+  .hero-social {
+    margin-bottom: 4rem;
+  }
+
+  .scroll-indicator {
+    bottom: 1.5rem;
   }
 }
