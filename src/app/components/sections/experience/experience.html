@@ -80,6 +80,14 @@
                 <h4>{{edu.degree}}</h4>
                 <h5>{{edu.institution}}</h5>
                 <span class="edu-year">{{edu.year}}</span>
+                <p>{{edu.description}}</p>
+                @if (edu.technologies) {
+                  <div class="tech-stack">
+                    @for (tech of edu.technologies; track tech) {
+                      <span class="tech-tag">{{tech}}</span>
+                    }
+                  </div>
+                }
               </div>
             </div>
           }

@@ -9,6 +9,7 @@ interface Education {
   institution: string;
   year: string;
   description: string;
+  technologies?: string[];
 }
 
 @Component({
@@ -30,13 +31,15 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
       degree: 'Bachelor Elektronica-ICT (Web & Mobile technologies)',
       institution: 'Odisee',
       year: '2020 - 2023',
-      description: 'Focus on software engineering, web development and mobile development'
+      description: 'Focus on software engineering, web development and mobile development',
+      technologies: ['Vue', 'React', 'HTML', 'CSS', 'TypeScript', 'Java', 'PHP', 'ReactNative', 'Flutter', 'Swift', 'Android', 'SQL', 'Git']
     },
     {
       degree: 'Industriële ICT',
       institution: 'VTI Waregem',
       year: '2017 - 2020',
-      description: 'Technical secondary education'
+      description: 'Technical secondary education',
+      technologies: ['C#', 'C', 'PLC', 'CSS', 'JavaScript', 'Arduino']
     }
   ];
 
@@ -67,3 +70,5 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
     });
   }
 }
+
+export type { Experience };
