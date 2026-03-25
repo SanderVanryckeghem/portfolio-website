@@ -3,14 +3,7 @@ import { PortfolioService } from '../../../services/portfolio';
 import { AnimationService } from '../../../services/animation';
 import { Experience } from '../../../models/experience.model';
 import { Certificate } from '../../../models/certificate.model';
-
-interface Education {
-  degree: string;
-  institution: string;
-  year: string;
-  description: string;
-  technologies?: string[];
-}
+import { Education } from '../../../models/education.model';
 
 @Component({
   selector: 'app-experience',
@@ -26,22 +19,7 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
 
   experiences: Experience[] = [];
   certificates: Certificate[] = [];
-  readonly education: Education[] = [
-    {
-      degree: 'Bachelor Elektronica-ICT (Web & Mobile technologies)',
-      institution: 'Odisee',
-      year: '2020 - 2023',
-      description: 'Focus on software engineering, web development and mobile development',
-      technologies: ['Vue', 'React', 'HTML', 'CSS', 'TypeScript', 'Java', 'PHP', 'ReactNative', 'Flutter', 'Swift', 'Android', 'SQL', 'Git']
-    },
-    {
-      degree: 'Industriële ICT',
-      institution: 'VTI Waregem',
-      year: '2017 - 2020',
-      description: 'Technical secondary education',
-      technologies: ['C#', 'C', 'PLC', 'CSS', 'JavaScript', 'Arduino']
-    }
-  ];
+  education: Education[] = [];
 
   ngOnInit(): void {
     this.portfolioService.getExperiences().subscribe(exp => {
@@ -49,6 +27,9 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
     });
     this.portfolioService.getCertificates().subscribe(certs => {
       this.certificates = certs;
+    });
+    this.portfolioService.getEducation().subscribe(edu => {
+      this.education = edu;
     });
   }
 

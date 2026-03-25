@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PortfolioService } from '../../../services/portfolio';
 import { AnimationService } from '../../../services/animation';
+import { CVGeneratorService } from '../../../services/cv-generator';
 import { Developer } from '../../../models/developer.model';
 import { ParticleBackgroundComponent } from '../../shared/particle-background/particle-background';
 
@@ -15,6 +16,7 @@ import { ParticleBackgroundComponent } from '../../shared/particle-background/pa
 export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly portfolioService = inject(PortfolioService);
   private readonly animationService = inject(AnimationService);
+  private readonly cvGeneratorService = inject(CVGeneratorService);
 
   developer: Developer | null = null;
   titles: string[] = [
@@ -47,6 +49,10 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
   scrollToSection(sectionId: string): void {
     this.animationService.scrollToElement(sectionId);
+  }
+
+  downloadCV(): void {
+    this.cvGeneratorService.generateCV();
   }
 
   private initRollingText(): void {

@@ -5,6 +5,7 @@ import { Technology, TechCategory } from '../models/technology.model';
 import { Project, ProjectCategory } from '../models/project.model';
 import { Developer } from '../models/developer.model';
 import { Certificate } from '../models/certificate.model';
+import { Education } from '../models/education.model';
 
 @Injectable({
   providedIn: 'root'
@@ -145,7 +146,7 @@ export class PortfolioService {
     {
       id: 1,
       name: 'Certified Mid-Level Angular Developer',
-      issuer: 'Angular',
+      issuer: 'Certificates.dev',
       achievedDate: new Date('2026-01-01'),
       expiryDate: new Date('2029-01-01'),
       icon: 'fab fa-angular'
@@ -153,7 +154,7 @@ export class PortfolioService {
     {
       id: 2,
       name: 'Certified Junior Angular Developer',
-      issuer: 'Angular',
+      issuer: 'Certificates.dev',
       achievedDate: new Date('2025-11-01'),
       expiryDate: new Date('2028-11-01'),
       icon: 'fab fa-angular'
@@ -196,13 +197,33 @@ export class PortfolioService {
     }
   ];
 
+  private education: Education[] = [
+    {
+      id: 1,
+      degree: 'Bachelor Elektronica-ICT (Web & Mobile technologies)',
+      institution: 'Odisee',
+      year: '2020 - 2023',
+      description: 'Focus on software engineering, web development and mobile development',
+      technologies: ['Vue', 'React', 'HTML', 'CSS', 'TypeScript', 'Java', 'PHP', 'ReactNative', 'Flutter', 'Swift', 'Android', 'SQL', 'Git']
+    },
+    {
+      id: 2,
+      degree: 'Industriële ICT',
+      institution: 'VTI Waregem',
+      year: '2017 - 2020',
+      description: 'Technical secondary education',
+      technologies: ['C#', 'C', 'PLC', 'CSS', 'JavaScript', 'Arduino']
+    }
+  ];
+
   private experiences: Experience[] = [
     {
       id: 1,
       company: 'Axxes - Silverfin',
       position: 'BSO Solution Developer UK-Unit',
       startDate: new Date('2025-05-01'),
-      current: true,
+      endDate: new Date('2025-12-31'),
+      current: false,
       description: 'For my third term at Silverfin, I switched from Team Platform to Team UK. Within this team, I work on updating Corporate Tax templates to support multiple business types. The team consists of 5 internal BSO Developers and another Axxes Consultant.',
       achievements: [
         'Updating existing templates',
@@ -341,5 +362,9 @@ export class PortfolioService {
 
   getCertificates(): Observable<Certificate[]> {
     return of(this.certificates);
+  }
+
+  getEducation(): Observable<Education[]> {
+    return of(this.education);
   }
 }
