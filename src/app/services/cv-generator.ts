@@ -16,13 +16,49 @@ import autoTable from 'jspdf-autotable';
 export class CVGeneratorService {
   private readonly portfolioService = inject(PortfolioService);
 
-  private readonly colors = {
-    primary: [99, 102, 241] as [number, number, number],
-    secondary: [139, 92, 246] as [number, number, number],
-    dark: [30, 41, 59] as [number, number, number],
-    gray: [100, 116, 139] as [number, number, number],
-    lightGray: [226, 232, 240] as [number, number, number]
-  };
+  private getActiveColors(): {
+    primary: [number, number, number];
+    secondary: [number, number, number];
+    dark: [number, number, number];
+    gray: [number, number, number];
+    lightGray: [number, number, number];
+  } {
+    const rootStyles = getComputedStyle(document.documentElement);
+
+    // Get the accent color from CSS variable
+    const accentColor = rootStyles.getPropertyValue('--accent').trim();
+    const accentHoverColor = rootStyles.getPropertyValue('--accent-hover').trim();
+
+    // Parse gradient to get secondary color (the end color of the gradient)
+    const gradient = rootStyles.getPropertyValue('--gradient').trim();
+    const gradientColors = gradient.match(/#[a-fA-F0-9]{6}/g) || [];
+    const secondaryHex = gradientColors[1] || accentHoverColor || accentColor;
+
+    return {
+      primary: this.hexToRgb(accentColor),
+      secondary: this.hexToRgb(secondaryHex),
+      dark: [26, 26, 26] as [number, number, number],           // Dark text for PDF readability
+      gray: [102, 102, 102] as [number, number, number],        // Secondary text
+      lightGray: [229, 229, 229] as [number, number, number]    // Borders/dividers
+    };
+  }
+
+  private hexToRgb(hex: string): [number, number, number] {
+    // Remove # if present
+    hex = hex.replace('#', '');
+
+    // Parse the hex values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Return default orange if parsing fails
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+      return [249, 115, 22]; // Default to #f97316
+    }
+
+    return [r, g, b];
+  }
 
   generateCV(): void {
     forkJoin({
@@ -51,14 +87,17 @@ export class CVGeneratorService {
     const contentWidth = pageWidth - (margin * 2);
     let yPosition = margin;
 
+    // Get active colors from website theme
+    const colors = this.getActiveColors();
+
     // Header Section
-    yPosition = this.addHeader(doc, data.developer, margin, yPosition, contentWidth);
+    yPosition = this.addHeader(doc, data.developer, margin, yPosition, contentWidth, colors);
 
     // About Section
-    yPosition = this.addAboutSection(doc, data.developer, margin, yPosition, contentWidth);
+    yPosition = this.addAboutSection(doc, data.developer, margin, yPosition, contentWidth, colors);
 
     // Skills Section
-    yPosition = this.addSkillsSection(doc, data.technologies, margin, yPosition, contentWidth);
+    yPosition = this.addSkillsSection(doc, data.technologies, margin, yPosition, colors);
 
     // Check if we need a new page before work experience
     if (yPosition > 220) {
@@ -67,16 +106,16 @@ export class CVGeneratorService {
     }
 
     // Work Experience Section
-    yPosition = this.addExperienceSection(doc, data.experiences, margin, yPosition, contentWidth);
+    yPosition = this.addExperienceSection(doc, data.experiences, margin, yPosition, contentWidth, colors);
 
     // Education Section
-    yPosition = this.addEducationSection(doc, data.education, margin, yPosition, contentWidth);
+    yPosition = this.addEducationSection(doc, data.education, margin, yPosition, contentWidth, colors);
 
     // Projects Section
-    yPosition = this.addProjectsSection(doc, data.projects, margin, yPosition, contentWidth);
+    yPosition = this.addProjectsSection(doc, data.projects, margin, yPosition, contentWidth, colors);
 
     // Certificates Section
-    this.addCertificatesSection(doc, data.certificates, margin, yPosition, contentWidth);
+    this.addCertificatesSection(doc, data.certificates, margin, yPosition, colors);
 
     // Save the PDF
     const fileName = `${data.developer.name.replace(/\s+/g, '_')}_CV.pdf`;
@@ -88,27 +127,28 @@ export class CVGeneratorService {
     developer: Developer,
     margin: number,
     yPosition: number,
-    contentWidth: number
+    contentWidth: number,
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     const pageWidth = doc.internal.pageSize.getWidth();
 
     // Name
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...this.colors.dark);
+    doc.setTextColor(...colors.dark);
     doc.text(developer.name, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 10;
 
     // Title
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...this.colors.primary);
+    doc.setTextColor(...colors.primary);
     doc.text(developer.title, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 8;
 
     // Contact info
     doc.setFontSize(10);
-    doc.setTextColor(...this.colors.gray);
+    doc.setTextColor(...colors.gray);
     const contactInfo = `${developer.email} | ${developer.location}`;
     doc.text(contactInfo, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 6;
@@ -129,7 +169,7 @@ export class CVGeneratorService {
 
     // Divider line
     yPosition += 4;
-    doc.setDrawColor(...this.colors.lightGray);
+    doc.setDrawColor(...colors.lightGray);
     doc.setLineWidth(0.5);
     doc.line(margin, yPosition, margin + contentWidth, yPosition);
     yPosition += 10;
@@ -142,15 +182,16 @@ export class CVGeneratorService {
     developer: Developer,
     margin: number,
     yPosition: number,
-    contentWidth: number
+    contentWidth: number,
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     // Section title
-    yPosition = this.addSectionTitle(doc, 'About Me', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'About Me', margin, yPosition, colors);
 
     // Bio text
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...this.colors.dark);
+    doc.setTextColor(...colors.dark);
     const bioLines = doc.splitTextToSize(developer.bio, contentWidth);
     doc.text(bioLines, margin, yPosition);
     yPosition += bioLines.length * 5 + 10;
@@ -163,9 +204,9 @@ export class CVGeneratorService {
     technologies: Technology[],
     margin: number,
     yPosition: number,
-    contentWidth: number
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
-    yPosition = this.addSectionTitle(doc, 'Skills', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'Skills', margin, yPosition, colors);
 
     // Sort by proficiency and group
     const sortedTech = [...technologies].sort((a, b) => b.proficiency - a.proficiency);
@@ -183,14 +224,14 @@ export class CVGeneratorService {
       body: skillsData,
       theme: 'striped',
       headStyles: {
-        fillColor: this.colors.primary,
+        fillColor: colors.primary,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: this.colors.dark
+        textColor: colors.dark
       },
       columnStyles: {
         0: { cellWidth: 60 },
@@ -209,7 +250,8 @@ export class CVGeneratorService {
     experiences: Experience[],
     margin: number,
     yPosition: number,
-    contentWidth: number
+    contentWidth: number,
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     // Check if we need a new page
     if (yPosition > 240) {
@@ -217,7 +259,7 @@ export class CVGeneratorService {
       yPosition = 20;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Work Experience', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'Work Experience', margin, yPosition, colors);
 
     for (const exp of experiences) {
       // Check for page break
@@ -229,14 +271,14 @@ export class CVGeneratorService {
       // Position & Company
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...this.colors.dark);
+      doc.setTextColor(...colors.dark);
       doc.text(exp.position, margin, yPosition);
       yPosition += 5;
 
       // Company and dates
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...this.colors.primary);
+      doc.setTextColor(...colors.primary);
       const dateStr = exp.current
         ? `${this.formatDate(exp.startDate)} - Present`
         : `${this.formatDate(exp.startDate)} - ${this.formatDate(exp.endDate!)}`;
@@ -245,7 +287,7 @@ export class CVGeneratorService {
 
       // Description
       doc.setFontSize(9);
-      doc.setTextColor(...this.colors.gray);
+      doc.setTextColor(...colors.gray);
       const descLines = doc.splitTextToSize(exp.description, contentWidth);
       doc.text(descLines, margin, yPosition);
       yPosition += descLines.length * 4 + 3;
@@ -253,7 +295,7 @@ export class CVGeneratorService {
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
         doc.setFontSize(9);
-        doc.setTextColor(...this.colors.dark);
+        doc.setTextColor(...colors.dark);
         for (const achievement of exp.achievements.slice(0, 3)) {
           const bulletText = `• ${achievement}`;
           const achLines = doc.splitTextToSize(bulletText, contentWidth - 5);
@@ -265,7 +307,7 @@ export class CVGeneratorService {
       // Technologies
       if (exp.technologies && exp.technologies.length > 0) {
         doc.setFontSize(8);
-        doc.setTextColor(...this.colors.secondary);
+        doc.setTextColor(...colors.secondary);
         const techText = exp.technologies.join(' • ');
         const techLines = doc.splitTextToSize(techText, contentWidth);
         doc.text(techLines, margin, yPosition);
@@ -283,7 +325,8 @@ export class CVGeneratorService {
     education: Education[],
     margin: number,
     yPosition: number,
-    contentWidth: number
+    contentWidth: number,
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     // Check if we need a new page
     if (yPosition > 240) {
@@ -291,33 +334,33 @@ export class CVGeneratorService {
       yPosition = 20;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Education', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'Education', margin, yPosition, colors);
 
     for (const edu of education) {
       // Degree
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...this.colors.dark);
+      doc.setTextColor(...colors.dark);
       doc.text(edu.degree, margin, yPosition);
       yPosition += 5;
 
       // Institution and year
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...this.colors.primary);
+      doc.setTextColor(...colors.primary);
       doc.text(`${edu.institution} | ${edu.year}`, margin, yPosition);
       yPosition += 5;
 
       // Description
       doc.setFontSize(9);
-      doc.setTextColor(...this.colors.gray);
+      doc.setTextColor(...colors.gray);
       doc.text(edu.description, margin, yPosition);
       yPosition += 5;
 
       // Technologies learned
       if (edu.technologies && edu.technologies.length > 0) {
         doc.setFontSize(8);
-        doc.setTextColor(...this.colors.secondary);
+        doc.setTextColor(...colors.secondary);
         const techText = edu.technologies.join(' • ');
         const techLines = doc.splitTextToSize(techText, contentWidth);
         doc.text(techLines, margin, yPosition);
@@ -335,7 +378,8 @@ export class CVGeneratorService {
     projects: Project[],
     margin: number,
     yPosition: number,
-    contentWidth: number
+    contentWidth: number,
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     // Check if we need a new page
     if (yPosition > 220) {
@@ -343,7 +387,7 @@ export class CVGeneratorService {
       yPosition = 20;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Featured Projects', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'Featured Projects', margin, yPosition, colors);
 
     // Only show featured projects
     const featuredProjects = projects.filter(p => p.featured).slice(0, 4);
@@ -358,14 +402,14 @@ export class CVGeneratorService {
       // Project title
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...this.colors.dark);
+      doc.setTextColor(...colors.dark);
       doc.text(project.title, margin, yPosition);
       yPosition += 5;
 
       // Description
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...this.colors.gray);
+      doc.setTextColor(...colors.gray);
       const descLines = doc.splitTextToSize(project.longDescription, contentWidth);
       doc.text(descLines, margin, yPosition);
       yPosition += descLines.length * 4 + 2;
@@ -373,7 +417,7 @@ export class CVGeneratorService {
       // Technologies
       if (project.technologies && project.technologies.length > 0) {
         doc.setFontSize(8);
-        doc.setTextColor(...this.colors.secondary);
+        doc.setTextColor(...colors.secondary);
         const techText = project.technologies.join(' • ');
         doc.text(techText, margin, yPosition);
         yPosition += 4;
@@ -390,7 +434,7 @@ export class CVGeneratorService {
     certificates: Certificate[],
     margin: number,
     yPosition: number,
-    contentWidth: number
+    colors: ReturnType<typeof this.getActiveColors>
   ): number {
     // Check if we need a new page
     if (yPosition > 220) {
@@ -398,7 +442,7 @@ export class CVGeneratorService {
       yPosition = 20;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Certificates', margin, yPosition);
+    yPosition = this.addSectionTitle(doc, 'Certificates', margin, yPosition, colors);
 
     const certData = certificates.map(cert => [
       cert.name,
@@ -412,14 +456,14 @@ export class CVGeneratorService {
       body: certData,
       theme: 'striped',
       headStyles: {
-        fillColor: this.colors.primary,
+        fillColor: colors.primary,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: this.colors.dark
+        textColor: colors.dark
       },
       margin: { left: margin, right: margin }
     });
@@ -428,15 +472,21 @@ export class CVGeneratorService {
     return yPosition;
   }
 
-  private addSectionTitle(doc: jsPDF, title: string, margin: number, yPosition: number): number {
+  private addSectionTitle(
+    doc: jsPDF,
+    title: string,
+    margin: number,
+    yPosition: number,
+    colors: ReturnType<typeof this.getActiveColors>
+  ): number {
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...this.colors.primary);
+    doc.setTextColor(...colors.primary);
     doc.text(title, margin, yPosition);
     yPosition += 2;
 
     // Underline
-    doc.setDrawColor(...this.colors.primary);
+    doc.setDrawColor(...colors.primary);
     doc.setLineWidth(0.5);
     doc.line(margin, yPosition, margin + 40, yPosition);
     yPosition += 8;
