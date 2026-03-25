@@ -206,42 +206,23 @@ export class CVGeneratorService {
     yPosition: number,
     colors: ReturnType<typeof this.getActiveColors>
   ): number {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const contentWidth = pageWidth - (margin * 2);
+
     yPosition = this.addSectionTitle(doc, 'Skills', margin, yPosition, colors);
 
-    // Sort by proficiency and group
+    // Sort by proficiency and display as inline list
     const sortedTech = [...technologies].sort((a, b) => b.proficiency - a.proficiency);
+    const skillNames = sortedTech.map(tech => tech.name);
+    const skillsText = skillNames.join('  •  ');
 
-    // Create skills table
-    const skillsData = sortedTech.map(tech => [
-      tech.name,
-      tech.category,
-      `${tech.proficiency}%`
-    ]);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.dark);
+    const skillLines = doc.splitTextToSize(skillsText, contentWidth);
+    doc.text(skillLines, margin, yPosition);
+    yPosition += skillLines.length * 5 + 10;
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Technology', 'Category', 'Proficiency']],
-      body: skillsData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: colors.primary,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 9
-      },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: colors.dark
-      },
-      columnStyles: {
-        0: { cellWidth: 60 },
-        1: { cellWidth: 60 },
-        2: { cellWidth: 40, halign: 'center' }
-      },
-      margin: { left: margin, right: margin }
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
     return yPosition;
   }
 
@@ -387,12 +368,9 @@ export class CVGeneratorService {
       yPosition = 20;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Featured Projects', margin, yPosition, colors);
+    yPosition = this.addSectionTitle(doc, 'Projects', margin, yPosition, colors);
 
-    // Only show featured projects
-    const featuredProjects = projects.filter(p => p.featured).slice(0, 4);
-
-    for (const project of featuredProjects) {
+    for (const project of projects) {
       // Check for page break
       if (yPosition > 250) {
         doc.addPage();
