@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ThemeService } from './theme';
+import { CVGeneratorService } from './cv-generator';
 
-describe('ThemeService', () => {
-  let service: ThemeService;
+describe('CVGeneratorService', () => {
+  let service: CVGeneratorService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ThemeService);
+    service = TestBed.inject(CVGeneratorService);
   });
 
   it('should be created', () => {
