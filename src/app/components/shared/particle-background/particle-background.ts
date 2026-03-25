@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ThemeService, ColorScheme } from '../../../services/theme';
 
 interface Particle {
   x: number;
@@ -7,6 +9,12 @@ interface Particle {
   vy: number;
   radius: number;
   opacity: number;
+}
+
+interface ColorRGB {
+  r: number;
+  g: number;
+  b: number;
 }
 
 @Component({
@@ -25,7 +33,7 @@ interface Particle {
       width: 100%;
       height: 100%;
       pointer-events: none;
-      opacity: 0.5;
+      opacity: 0.7;
       z-index: 1;
     }
   `]
@@ -33,11 +41,19 @@ interface Particle {
 export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
+  private readonly themeService = inject(ThemeService);
   private ctx!: CanvasRenderingContext2D;
   private particles: Particle[] = [];
   private animationId!: number;
   private mouseX = 0;
   private mouseY = 0;
+  private colorSubscription!: Subscription;
+  private currentColor: ColorRGB = { r: 249, g: 115, b: 22 }; // Default orange
+
+  private readonly colorSchemes: Record<ColorScheme, ColorRGB> = {
+    orange: { r: 249, g: 115, b: 22 },
+    teal: { r: 20, g: 184, b: 166 }
+  };
 
   private boundHandleMouseMove = this.handleMouseMove.bind(this);
   private boundHandleResize = this.handleResize.bind(this);
@@ -45,6 +61,11 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
   ngOnInit(): void {
     window.addEventListener('mousemove', this.boundHandleMouseMove);
     window.addEventListener('resize', this.boundHandleResize);
+
+    // Subscribe to color scheme changes
+    this.colorSubscription = this.themeService.colorScheme$.subscribe(scheme => {
+      this.currentColor = this.colorSchemes[scheme];
+    });
   }
 
   ngAfterViewInit(): void {
@@ -56,6 +77,9 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
   ngOnDestroy(): void {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
+    }
+    if (this.colorSubscription) {
+      this.colorSubscription.unsubscribe();
     }
     window.removeEventListener('mousemove', this.boundHandleMouseMove);
     window.removeEventListener('resize', this.boundHandleResize);
@@ -74,7 +98,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private createParticles(): void {
-    const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 15000);
+    const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 10000);
 
     for (let i = 0; i < particleCount; i++) {
       this.particles.push({
@@ -82,8 +106,8 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
         y: Math.random() * window.innerHeight,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.5 + 0.2
+        radius: Math.random() * 2.5 + 1.5,
+        opacity: Math.random() * 0.4 + 0.3
       });
     }
   }
@@ -127,7 +151,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
       // Draw particle
       this.ctx.beginPath();
       this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(102, 126, 234, ${particle.opacity})`;
+      this.ctx.fillStyle = `rgba(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b}, ${particle.opacity})`;
       this.ctx.fill();
     });
 
@@ -144,11 +168,11 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
         const dy = this.particles[i].y - this.particles[j].y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < 120) {
-          const opacity = (120 - distance) / 120 * 0.3;
+        if (distance < 140) {
+          const opacity = (140 - distance) / 140 * 0.4;
           this.ctx.beginPath();
-          this.ctx.strokeStyle = `rgba(102, 126, 234, ${opacity})`;
-          this.ctx.lineWidth = 1;
+          this.ctx.strokeStyle = `rgba(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b}, ${opacity})`;
+          this.ctx.lineWidth = 1.2;
           this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
           this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
           this.ctx.stroke();

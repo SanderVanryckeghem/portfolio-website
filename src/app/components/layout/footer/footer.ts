@@ -32,10 +32,10 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
           <div class="footer-section">
             <h4>Services</h4>
             <ul class="footer-links">
-              <li>Web Development</li>
-              <li>UI/UX Design</li>
-              <li>Consulting</li>
-              <li>Maintenance</li>
+              <li>Web </li>
+              <li>Mobile </li>
+              <li>Frontend </li>
+              <li>Fullstack </li>
             </ul>
           </div>
 
