@@ -53,6 +53,7 @@ export class ThemeService {
     } else {
       document.documentElement.setAttribute('data-theme', 'light');
     }
+    this.updateFavicon();
   }
 
   isDarkMode(): boolean {
@@ -76,5 +77,37 @@ export class ThemeService {
     } else {
       document.documentElement.removeAttribute('data-color');
     }
+    this.updateFavicon();
+  }
+
+  private updateFavicon(): void {
+    const colors = this.colorScheme.value === 'teal'
+      ? { start: '#14b8a6', end: '#06b6d4' }
+      : { start: '#f97316', end: '#ef4444' };
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${colors.start}"/>
+            <stop offset="100%" style="stop-color:${colors.end}"/>
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="6" fill="${this.darkMode.value ? '#0a0a0a' : '#ffffff'}"/>
+        <text x="16" y="22" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" fill="url(#grad)" text-anchor="middle">SV</text>
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+
+    let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/svg+xml';
+    link.href = url;
   }
 }
