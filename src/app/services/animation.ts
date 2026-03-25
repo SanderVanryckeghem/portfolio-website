@@ -306,17 +306,17 @@ export class AnimationService {
     }
   }
 
-  // Smooth scroll to element
+  // Smooth scroll to element - uses native scrolling for instant response
   scrollToElement(elementId: string): void {
     const element = document.getElementById(elementId);
     if (element) {
-      gsap.to(window, {
-        duration: 1,
-        scrollTo: {
-          y: element.offsetTop - 80, // Account for fixed header
-          autoKill: false
-        },
-        ease: 'power2.inOut'
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
       });
     }
   }
