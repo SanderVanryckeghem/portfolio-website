@@ -106,6 +106,39 @@
   gap: 1rem;
 }
 
+.color-toggle {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
+
+  .color-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: background var(--transition-base);
+
+    &.orange {
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+    }
+
+    &.teal {
+      background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+    }
+  }
+}
+
 .theme-toggle {
   width: 40px;
   height: 40px;

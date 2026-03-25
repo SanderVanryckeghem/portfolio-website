@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
+export type ColorScheme = 'orange' | 'teal';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ThemeService {
   private darkMode = new BehaviorSubject<boolean>(true);
   public darkMode$ = this.darkMode.asObservable();
+
+  private colorScheme = new BehaviorSubject<ColorScheme>('orange');
+  public colorScheme$ = this.colorScheme.asObservable();
 
   constructor() {
     // Check for saved theme preference or default to dark mode
@@ -18,7 +23,15 @@ export class ThemeService {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       this.darkMode.next(prefersDark);
     }
+
+    // Check for saved color scheme preference
+    const savedColorScheme = localStorage.getItem('colorScheme') as ColorScheme;
+    if (savedColorScheme && (savedColorScheme === 'orange' || savedColorScheme === 'teal')) {
+      this.colorScheme.next(savedColorScheme);
+    }
+
     this.applyTheme();
+    this.applyColorScheme();
   }
 
   toggleTheme(): void {
@@ -44,5 +57,24 @@ export class ThemeService {
 
   isDarkMode(): boolean {
     return this.darkMode.value;
+  }
+
+  toggleColorScheme(): void {
+    const newValue: ColorScheme = this.colorScheme.value === 'orange' ? 'teal' : 'orange';
+    this.colorScheme.next(newValue);
+    localStorage.setItem('colorScheme', newValue);
+    this.applyColorScheme();
+  }
+
+  getColorScheme(): ColorScheme {
+    return this.colorScheme.value;
+  }
+
+  private applyColorScheme(): void {
+    if (this.colorScheme.value === 'teal') {
+      document.documentElement.setAttribute('data-color', 'teal');
+    } else {
+      document.documentElement.removeAttribute('data-color');
+    }
   }
 }

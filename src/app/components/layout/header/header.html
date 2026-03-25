@@ -21,8 +21,15 @@
           }
         </ul>
 
-        <!-- Theme Toggle & Mobile Menu -->
+        <!-- Theme Toggle, Color Toggle & Mobile Menu -->
         <div class="nav-actions">
+          <button
+            class="color-toggle"
+            (click)="toggleColorScheme()"
+            [title]="(colorScheme$ | async) === 'orange' ? 'Switch to Teal' : 'Switch to Orange'">
+            <span class="color-indicator" [ngClass]="(colorScheme$ | async) === 'orange' ? 'orange' : 'teal'"></span>
+          </button>
+
           <button
             class="theme-toggle"
             (click)="toggleTheme()"

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { Observable } from 'rxjs';
-import { ThemeService } from '../../../services/theme';
+import { ThemeService, ColorScheme } from '../../../services/theme';
 import { AnimationService } from '../../../services/animation';
 
 interface NavLink {
@@ -23,6 +23,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly animationService = inject(AnimationService);
 
   isDarkMode$: Observable<boolean>;
+  colorScheme$: Observable<ColorScheme>;
   isScrolled = false;
   isMobileMenuOpen = false;
   activeSection = 'home';
@@ -39,6 +40,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.isDarkMode$ = this.themeService.darkMode$;
+    this.colorScheme$ = this.themeService.colorScheme$;
   }
 
   ngOnInit(): void {
@@ -58,6 +60,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  toggleColorScheme(): void {
+    this.themeService.toggleColorScheme();
   }
 
   toggleMobileMenu(): void {

@@ -1,15 +1,15 @@
 :root {
-  // Dark theme (default)
+  // Dark theme (default) - Color scheme: Sunset Orange (Option 3)
   --bg-primary: #0a0a0a;
   --bg-primary-rgb: 10, 10, 10;
   --bg-secondary: #1a1a1a;
   --bg-card: #2a2a2a;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
-  --accent: #667eea;
-  --accent-hover: #5a6fd6;
+  --accent: #f97316;
+  --accent-hover: #ea580c;
   --border-color: rgba(255, 255, 255, 0.1);
-  --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
 
   // Status colors
   --color-error: #ff4444;
@@ -53,12 +53,19 @@
   --bg-card: #ffffff;
   --text-primary: #1a1a1a;
   --text-secondary: #666666;
-  --accent: #667eea;
-  --accent-hover: #5a6fd6;
+  --accent: #f97316;
+  --accent-hover: #ea580c;
   --border-color: rgba(0, 0, 0, 0.1);
 
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+// Color scheme: Cyber Teal (Option 5)
+[data-color="teal"] {
+  --accent: #14b8a6;
+  --accent-hover: #0d9488;
+  --gradient: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
 }
