@@ -11,7 +11,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CVGeneratorService {
   private readonly portfolioService = inject(PortfolioService);
@@ -37,9 +37,9 @@ export class CVGeneratorService {
     return {
       primary: this.hexToRgb(accentColor),
       secondary: this.hexToRgb(secondaryHex),
-      dark: [26, 26, 26] as [number, number, number],           // Dark text for PDF readability
-      gray: [102, 102, 102] as [number, number, number],        // Secondary text
-      lightGray: [229, 229, 229] as [number, number, number]    // Borders/dividers
+      dark: [26, 26, 26] as [number, number, number], // Dark text for PDF readability
+      gray: [102, 102, 102] as [number, number, number], // Secondary text
+      lightGray: [229, 229, 229] as [number, number, number], // Borders/dividers
     };
   }
 
@@ -67,8 +67,8 @@ export class CVGeneratorService {
       education: this.portfolioService.getEducation(),
       projects: this.portfolioService.getProjects(),
       technologies: this.portfolioService.getTechnologies(),
-      certificates: this.portfolioService.getCertificates()
-    }).subscribe(data => {
+      certificates: this.portfolioService.getCertificates(),
+    }).subscribe((data) => {
       this.createPDF(data);
     });
   }
@@ -84,7 +84,7 @@ export class CVGeneratorService {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
+    const contentWidth = pageWidth - margin * 2;
     let yPosition = margin;
 
     // Get active colors from website theme
@@ -106,13 +106,34 @@ export class CVGeneratorService {
     }
 
     // Work Experience Section
-    yPosition = this.addExperienceSection(doc, data.experiences, margin, yPosition, contentWidth, colors);
+    yPosition = this.addExperienceSection(
+      doc,
+      data.experiences,
+      margin,
+      yPosition,
+      contentWidth,
+      colors,
+    );
 
     // Education Section
-    yPosition = this.addEducationSection(doc, data.education, margin, yPosition, contentWidth, colors);
+    yPosition = this.addEducationSection(
+      doc,
+      data.education,
+      margin,
+      yPosition,
+      contentWidth,
+      colors,
+    );
 
     // Projects Section
-    yPosition = this.addProjectsSection(doc, data.projects, margin, yPosition, contentWidth, colors);
+    yPosition = this.addProjectsSection(
+      doc,
+      data.projects,
+      margin,
+      yPosition,
+      contentWidth,
+      colors,
+    );
 
     // Certificates Section
     this.addCertificatesSection(doc, data.certificates, margin, yPosition, colors);
@@ -128,7 +149,7 @@ export class CVGeneratorService {
     margin: number,
     yPosition: number,
     contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -183,7 +204,7 @@ export class CVGeneratorService {
     margin: number,
     yPosition: number,
     contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     // Section title
     yPosition = this.addSectionTitle(doc, 'About Me', margin, yPosition, colors);
@@ -204,16 +225,16 @@ export class CVGeneratorService {
     technologies: Technology[],
     margin: number,
     yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     const pageWidth = doc.internal.pageSize.getWidth();
-    const contentWidth = pageWidth - (margin * 2);
+    const contentWidth = pageWidth - margin * 2;
 
     yPosition = this.addSectionTitle(doc, 'Skills', margin, yPosition, colors);
 
     // Sort by proficiency and display as inline list
     const sortedTech = [...technologies].sort((a, b) => b.proficiency - a.proficiency);
-    const skillNames = sortedTech.map(tech => tech.name);
+    const skillNames = sortedTech.map((tech) => tech.name);
     const skillsText = skillNames.join('  •  ');
 
     doc.setFontSize(10);
@@ -232,7 +253,7 @@ export class CVGeneratorService {
     margin: number,
     yPosition: number,
     contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     // Check if we need a new page
     if (yPosition > 240) {
@@ -243,8 +264,8 @@ export class CVGeneratorService {
     yPosition = this.addSectionTitle(doc, 'Work Experience', margin, yPosition, colors);
 
     // Sort experiences by startDate (newest first)
-    const sortedExperiences = [...experiences].sort((a, b) =>
-      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    const sortedExperiences = [...experiences].sort(
+      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
 
     for (const exp of sortedExperiences) {
@@ -312,7 +333,7 @@ export class CVGeneratorService {
     margin: number,
     yPosition: number,
     contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     // Check if we need a new page
     if (yPosition > 240) {
@@ -365,7 +386,7 @@ export class CVGeneratorService {
     margin: number,
     yPosition: number,
     contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     // Check if we need a new page
     if (yPosition > 220) {
@@ -417,7 +438,7 @@ export class CVGeneratorService {
     certificates: Certificate[],
     margin: number,
     yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     // Check if we need a new page
     if (yPosition > 220) {
@@ -427,10 +448,10 @@ export class CVGeneratorService {
 
     yPosition = this.addSectionTitle(doc, 'Certificates', margin, yPosition, colors);
 
-    const certData = certificates.map(cert => [
+    const certData = certificates.map((cert) => [
       cert.name,
       cert.issuer,
-      this.formatCertDate(cert.achievedDate)
+      this.formatCertDate(cert.achievedDate),
     ]);
 
     autoTable(doc, {
@@ -442,13 +463,13 @@ export class CVGeneratorService {
         fillColor: colors.primary,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 9
+        fontSize: 9,
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: colors.dark
+        textColor: colors.dark,
       },
-      margin: { left: margin, right: margin }
+      margin: { left: margin, right: margin },
     });
 
     yPosition = (doc as any).lastAutoTable.finalY + 10;
@@ -460,7 +481,7 @@ export class CVGeneratorService {
     title: string,
     margin: number,
     yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>
+    colors: ReturnType<typeof this.getActiveColors>,
   ): number {
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -480,14 +501,14 @@ export class CVGeneratorService {
   private formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short'
+      month: 'short',
     });
   }
 
   private formatCertDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short'
+      month: 'short',
     });
   }
 }

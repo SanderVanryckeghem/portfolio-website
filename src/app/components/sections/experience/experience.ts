@@ -11,7 +11,7 @@ import { Education } from '../../../models/education.model';
   imports: [],
   templateUrl: './experience.html',
   styleUrls: ['./experience.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperienceComponent implements OnInit, AfterViewInit {
   private readonly portfolioService = inject(PortfolioService);
@@ -22,13 +22,13 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
   education: Education[] = [];
 
   ngOnInit(): void {
-    this.portfolioService.getExperiences().subscribe(exp => {
+    this.portfolioService.getExperiences().subscribe((exp) => {
       this.experiences = exp;
     });
-    this.portfolioService.getCertificates().subscribe(certs => {
+    this.portfolioService.getCertificates().subscribe((certs) => {
       this.certificates = certs;
     });
-    this.portfolioService.getEducation().subscribe(edu => {
+    this.portfolioService.getEducation().subscribe((edu) => {
       this.education = edu;
     });
   }
@@ -40,14 +40,14 @@ export class ExperienceComponent implements OnInit, AfterViewInit {
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long'
+      month: 'long',
     });
   }
 
   formatCertDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short'
+      month: 'short',
     });
   }
 }

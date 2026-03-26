@@ -21,10 +21,10 @@ import { AnimationService } from './services/animation';
     ProjectsComponent,
     TechnologiesComponent,
     ExperienceComponent,
-    ContactComponent
+    ContactComponent,
   ],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrls: ['./app.scss'],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   private readonly themeService = inject(ThemeService);

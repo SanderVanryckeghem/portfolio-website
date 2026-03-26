@@ -10,12 +10,9 @@
       <div class="hero-subtitle">
         <div class="rolling-text-container">
           @for (title of titles; track title; let i = $index) {
-            <span
-              class="rolling-text"
-              [class.active]="i === currentTitleIndex"
-              [attr.data-index]="i">
-              {{title}}
-            </span>
+          <span class="rolling-text" [class.active]="i === currentTitleIndex" [attr.data-index]="i">
+            {{title}}
+          </span>
           }
         </div>
       </div>
@@ -41,28 +38,19 @@
 
       <div class="hero-social">
         @if (developer?.social?.github) {
-          <a
-            [href]="developer.social.github"
-            target="_blank"
-            class="social-link">
-            <i class="fab fa-github"></i>
-          </a>
+        <a [href]="developer.social.github" target="_blank" class="social-link">
+          <i class="fab fa-github"></i>
+        </a>
         }
         @if (developer?.social?.linkedin) {
-          <a
-            [href]="developer.social.linkedin"
-            target="_blank"
-            class="social-link">
-            <i class="fab fa-linkedin"></i>
-          </a>
+        <a [href]="developer.social.linkedin" target="_blank" class="social-link">
+          <i class="fab fa-linkedin"></i>
+        </a>
         }
         @if (developer?.social?.twitter) {
-          <a
-            [href]="developer.social.twitter"
-            target="_blank"
-            class="social-link">
-            <i class="fab fa-twitter"></i>
-          </a>
+        <a [href]="developer.social.twitter" target="_blank" class="social-link">
+          <i class="fab fa-twitter"></i>
+        </a>
         }
       </div>
     </div>

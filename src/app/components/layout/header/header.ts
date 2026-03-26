@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { Observable } from 'rxjs';
 import { ThemeService, ColorScheme } from '../../../services/theme';
@@ -16,7 +23,7 @@ interface NavLink {
   imports: [AsyncPipe, NgClass],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private readonly themeService = inject(ThemeService);
@@ -35,7 +42,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { label: 'Projects', href: 'projects', icon: 'fas fa-briefcase' },
     { label: 'Technologies', href: 'technologies', icon: 'fas fa-code' },
     { label: 'Experience', href: 'experience', icon: 'fas fa-graduation-cap' },
-    { label: 'Contact', href: 'contact', icon: 'fas fa-envelope' }
+    { label: 'Contact', href: 'contact', icon: 'fas fa-envelope' },
   ];
 
   constructor() {
@@ -80,18 +87,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const options: IntersectionObserverInit = {
       root: null,
       rootMargin: '-50% 0px -50% 0px',
-      threshold: 0
+      threshold: 0,
     };
 
     this.sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           this.activeSection = entry.target.id;
         }
       });
     }, options);
 
-    document.querySelectorAll('section[id]').forEach(section => {
+    document.querySelectorAll('section[id]').forEach((section) => {
       this.sectionObserver!.observe(section);
     });
   }

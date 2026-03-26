@@ -7,7 +7,7 @@ import { Project } from '../../../models/project.model';
   imports: [],
   templateUrl: './project-card.html',
   styleUrls: ['./project-card.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectCardComponent {
   @Input() project!: Project;

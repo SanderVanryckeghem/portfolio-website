@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ThemeService, ColorScheme } from '../../../services/theme';
 
@@ -22,21 +31,21 @@ interface ColorRGB {
   standalone: true,
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <canvas #particleCanvas class="particle-canvas"></canvas>
-  `,
-  styles: [`
-    .particle-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: 0.7;
-      z-index: 1;
-    }
-  `]
+  template: ` <canvas #particleCanvas class="particle-canvas"></canvas> `,
+  styles: [
+    `
+      .particle-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0.7;
+        z-index: 1;
+      }
+    `,
+  ],
 })
 export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -52,7 +61,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
 
   private readonly colorSchemes: Record<ColorScheme, ColorRGB> = {
     orange: { r: 249, g: 115, b: 22 },
-    teal: { r: 20, g: 184, b: 166 }
+    teal: { r: 20, g: 184, b: 166 },
   };
 
   private boundHandleMouseMove = this.handleMouseMove.bind(this);
@@ -63,7 +72,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     window.addEventListener('resize', this.boundHandleResize);
 
     // Subscribe to color scheme changes
-    this.colorSubscription = this.themeService.colorScheme$.subscribe(scheme => {
+    this.colorSubscription = this.themeService.colorScheme$.subscribe((scheme) => {
       this.currentColor = this.colorSchemes[scheme];
     });
   }
@@ -107,7 +116,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
         radius: Math.random() * 2.5 + 1.5,
-        opacity: Math.random() * 0.4 + 0.3
+        opacity: Math.random() * 0.4 + 0.3,
       });
     }
   }
@@ -116,7 +125,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     // Update and draw particles
-    this.particles.forEach(particle => {
+    this.particles.forEach((particle) => {
       // Mouse interaction
       const dx = this.mouseX - particle.x;
       const dy = this.mouseY - particle.y;
@@ -169,7 +178,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < 140) {
-          const opacity = (140 - distance) / 140 * 0.4;
+          const opacity = ((140 - distance) / 140) * 0.4;
           this.ctx.beginPath();
           this.ctx.strokeStyle = `rgba(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b}, ${opacity})`;
           this.ctx.lineWidth = 1.2;

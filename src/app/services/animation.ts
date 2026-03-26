@@ -7,7 +7,7 @@ import { SplitText } from 'gsap/SplitText';
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AnimationService {
   constructor() {}
@@ -16,25 +16,29 @@ export class AnimationService {
   animateHero(): void {
     const tl = gsap.timeline();
 
-    tl.fromTo('.hero-title',
+    tl.fromTo(
+      '.hero-title',
       { opacity: 0, y: 50 },
-      { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }
+      { opacity: 1, y: 0, duration: 1, ease: 'power3.out' },
     )
-      .fromTo('.hero-subtitle',
+      .fromTo(
+        '.hero-subtitle',
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.5'
+        '-=0.5',
       )
-      .fromTo('.hero-buttons',
+      .fromTo(
+        '.hero-buttons',
         { opacity: 0, y: 20 },
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.3'
+        '-=0.3',
       );
   }
 
   // Scroll animations
   animateOnScroll(element: string, animation: gsap.TweenVars): void {
-    gsap.fromTo(element,
+    gsap.fromTo(
+      element,
       { opacity: 0, y: 50 },
       {
         ...animation,
@@ -42,9 +46,9 @@ export class AnimationService {
           trigger: element,
           start: 'top 80%',
           end: 'bottom 20%',
-          toggleActions: 'play none none reverse'
-        }
-      }
+          toggleActions: 'play none none reverse',
+        },
+      },
     );
   }
 
@@ -54,7 +58,8 @@ export class AnimationService {
 
     els.forEach((el, index) => {
       const fromVars = animation['from'] as gsap.TweenVars | undefined;
-      gsap.fromTo(el,
+      gsap.fromTo(
+        el,
         { opacity: 0, y: 30, ...fromVars },
         {
           opacity: 1,
@@ -64,9 +69,9 @@ export class AnimationService {
           scrollTrigger: {
             trigger: el,
             start: 'top 85%',
-            toggleActions: 'play none none none'
-          }
-        }
+            toggleActions: 'play none none none',
+          },
+        },
       );
     });
   }
@@ -81,7 +86,7 @@ export class AnimationService {
       // Set initial state immediately
       gsap.set(item, {
         opacity: 0,
-        x: isLeft ? -50 : 50
+        x: isLeft ? -50 : 50,
       });
 
       // Create scroll-triggered animation
@@ -94,9 +99,9 @@ export class AnimationService {
             opacity: 1,
             x: 0,
             duration: 0.8,
-            ease: 'power3.out'
+            ease: 'power3.out',
           });
-        }
+        },
       });
     });
   }
@@ -110,8 +115,8 @@ export class AnimationService {
         trigger: element,
         start: 'top bottom',
         end: 'bottom top',
-        scrub: true
-      }
+        scrub: true,
+      },
     });
   }
 
@@ -128,7 +133,7 @@ export class AnimationService {
         x: x,
         y: y,
         duration: 0.5,
-        ease: 'power2.out'
+        ease: 'power2.out',
       });
     });
   }
@@ -137,7 +142,7 @@ export class AnimationService {
   magneticButton(selector: string): void {
     const buttons = document.querySelectorAll(selector);
 
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
       button.addEventListener('mousemove', (e: MouseEvent) => {
         const rect = button.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
@@ -146,7 +151,7 @@ export class AnimationService {
         gsap.to(button, {
           x: x * 0.3,
           y: y * 0.3,
-          duration: 0.3
+          duration: 0.3,
         });
       });
 
@@ -154,7 +159,7 @@ export class AnimationService {
         gsap.to(button, {
           x: 0,
           y: 0,
-          duration: 0.3
+          duration: 0.3,
         });
       });
     });
@@ -185,7 +190,7 @@ export class AnimationService {
           duration: 2,
           ease: 'power2.out',
           opacity: 0,
-          onComplete: () => confetti.remove()
+          onComplete: () => confetti.remove(),
         });
       }, i * 10);
     }
@@ -218,7 +223,7 @@ export class AnimationService {
     // Set perspective on lines for 3D effect
     gsap.set(lines, {
       perspective: 400,
-      transformStyle: 'preserve-3d'
+      transformStyle: 'preserve-3d',
     });
 
     // Set initial state - all lines start rotated back
@@ -228,7 +233,7 @@ export class AnimationService {
         gsap.set(split.chars, {
           rotationX: index === 0 ? 0 : -90,
           transformOrigin,
-          backfaceVisibility: 'hidden'
+          backfaceVisibility: 'hidden',
         });
         // Hide non-active lines initially
         if (index !== 0) {
@@ -242,7 +247,7 @@ export class AnimationService {
   animateRollingText(
     lineSelector: string,
     currentIndex: number,
-    previousIndex: number | null
+    previousIndex: number | null,
   ): void {
     const lines = document.querySelectorAll(lineSelector);
     if (lines.length === 0) return;
@@ -269,29 +274,37 @@ export class AnimationService {
 
     // Animate out previous line (roll up/forward)
     if (previousSplit && previousLine) {
-      this.rollingTimeline.to(previousSplit.chars, {
-        rotationX: 90,
-        stagger: staggerTime,
-        duration: animDuration,
-        ease: 'power2.in',
-        transformOrigin,
-        onComplete: () => {
-          gsap.set(previousLine, { visibility: 'hidden' });
-        }
-      }, 0);
+      this.rollingTimeline.to(
+        previousSplit.chars,
+        {
+          rotationX: 90,
+          stagger: staggerTime,
+          duration: animDuration,
+          ease: 'power2.in',
+          transformOrigin,
+          onComplete: () => {
+            gsap.set(previousLine, { visibility: 'hidden' });
+          },
+        },
+        0,
+      );
     }
 
     // Animate in current line (roll in from below/back)
     gsap.set(currentLine, { visibility: 'visible' });
     gsap.set(currentSplit.chars, { rotationX: -90 });
 
-    this.rollingTimeline.to(currentSplit.chars, {
-      rotationX: 0,
-      stagger: staggerTime,
-      duration: animDuration,
-      ease: 'power2.out',
-      transformOrigin
-    }, previousSplit ? 0.2 : 0);
+    this.rollingTimeline.to(
+      currentSplit.chars,
+      {
+        rotationX: 0,
+        stagger: staggerTime,
+        duration: animDuration,
+        ease: 'power2.out',
+        transformOrigin,
+      },
+      previousSplit ? 0.2 : 0,
+    );
   }
 
   // Cleanup rolling text
@@ -316,7 +329,7 @@ export class AnimationService {
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }

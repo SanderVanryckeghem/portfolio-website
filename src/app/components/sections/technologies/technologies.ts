@@ -9,7 +9,7 @@ import { gsap } from 'gsap';
   imports: [],
   templateUrl: './technologies.html',
   styleUrls: ['./technologies.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TechnologiesComponent implements OnInit, AfterViewInit {
   private readonly portfolioService = inject(PortfolioService);
@@ -20,7 +20,7 @@ export class TechnologiesComponent implements OnInit, AfterViewInit {
   filteredTechnologies: Technology[] = [];
 
   ngOnInit(): void {
-    this.portfolioService.getTechnologies().subscribe(techs => {
+    this.portfolioService.getTechnologies().subscribe((techs) => {
       this.technologies = techs;
       this.filteredTechnologies = techs;
     });
@@ -37,9 +37,7 @@ export class TechnologiesComponent implements OnInit, AfterViewInit {
     if (category === 'All') {
       this.filteredTechnologies = this.technologies;
     } else {
-      this.filteredTechnologies = this.technologies.filter(
-        tech => tech.category === category
-      );
+      this.filteredTechnologies = this.technologies.filter((tech) => tech.category === category);
     }
 
     setTimeout(() => {
@@ -58,14 +56,14 @@ export class TechnologiesComponent implements OnInit, AfterViewInit {
       rotation: 0,
       duration: 0.4,
       stagger: 0.04,
-      ease: 'back.out(1.4)'
+      ease: 'back.out(1.4)',
     });
   }
 
   getTechGroups(): Map<TechCategory, Technology[]> {
     const groups = new Map<TechCategory, Technology[]>();
 
-    this.filteredTechnologies.forEach(tech => {
+    this.filteredTechnologies.forEach((tech) => {
       if (!groups.has(tech.category)) {
         groups.set(tech.category, []);
       }

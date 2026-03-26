@@ -1,5 +1,18 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { ContactService } from '../../../services/contact';
 import { AnimationService } from '../../../services/animation';
 import { PortfolioService } from '../../../services/portfolio';
@@ -19,7 +32,7 @@ interface ContactInfo {
   imports: [FormsModule, ReactiveFormsModule, SocialLinksComponent],
   templateUrl: './contact.html',
   styleUrls: ['./contact.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
@@ -44,20 +57,20 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
       icon: 'fas fa-envelope',
       label: 'Email',
       value: 'sandervanryckeghem@outlook.com',
-      link: 'mailto:sandervanryckeghem@outlook.com'
+      link: 'mailto:sandervanryckeghem@outlook.com',
     },
     {
       icon: 'fas fa-phone',
       label: 'Phone',
       value: '+32 499 47 03 43',
-      link: 'tel:+32499470343'
+      link: 'tel:+32499470343',
     },
     {
       icon: 'fas fa-map-marker-alt',
       label: 'Location',
       value: 'Deinze, Belgium',
-      link: null
-    }
+      link: null,
+    },
   ];
 
   constructor() {
@@ -65,7 +78,7 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.portfolioService.getDeveloper().subscribe(dev => {
+    this.portfolioService.getDeveloper().subscribe((dev) => {
       this.developer = dev;
       if (dev.email) {
         this.contactInfo[0].value = dev.email;
@@ -133,20 +146,24 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
     this.animationService.animateOnScroll('.contact-form', {
       opacity: 1,
       x: 0,
-      duration: 1
+      duration: 1,
     });
 
     this.animationService.animateOnScroll('.contact-info', {
       opacity: 1,
       x: 0,
-      duration: 1
+      duration: 1,
     });
 
-    this.animationService.animateStagger('.info-card', {
-      opacity: 1,
-      y: 0,
-      duration: 0.6
-    }, 0.1);
+    this.animationService.animateStagger(
+      '.info-card',
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+      },
+      0.1,
+    );
   }
 
   private initForm(): void {
@@ -154,7 +171,7 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       subject: ['', Validators.required],
-      message: ['', [Validators.required, Validators.minLength(10)]]
+      message: ['', [Validators.required, Validators.minLength(10)]],
     });
   }
 
@@ -184,7 +201,7 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
           this.submitSuccess = false;
           this.submitMessage = 'Something went wrong. Please try again later.';
           this.isSubmitting = false;
-        }
+        },
       });
     }
   }

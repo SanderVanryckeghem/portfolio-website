@@ -13,5 +13,5 @@ export enum TechCategory {
   BACKEND = 'Backend',
   MOBILE = 'Mobile',
   DESIGN = 'Design',
-  TOOLS = 'Tools'
+  TOOLS = 'Tools',
 }

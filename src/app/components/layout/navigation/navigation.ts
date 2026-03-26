@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { AnimationService } from '../../../services/animation';
 
 interface NavLink {
@@ -13,7 +20,7 @@ interface NavLink {
   imports: [],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavigationComponent {
   private readonly animationService = inject(AnimationService);

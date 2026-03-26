@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export type ColorScheme = 'orange' | 'teal';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ThemeService {
   private darkMode = new BehaviorSubject<boolean>(true);
@@ -81,9 +81,10 @@ export class ThemeService {
   }
 
   private updateFavicon(): void {
-    const colors = this.colorScheme.value === 'teal'
-      ? { start: '#14b8a6', end: '#06b6d4' }
-      : { start: '#f97316', end: '#ef4444' };
+    const colors =
+      this.colorScheme.value === 'teal'
+        ? { start: '#14b8a6', end: '#06b6d4' }
+        : { start: '#f97316', end: '#ef4444' };
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">

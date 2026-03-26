@@ -1,4 +1,11 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PortfolioService } from '../../../services/portfolio';
 import { AnimationService } from '../../../services/animation';
 import { CVGeneratorService } from '../../../services/cv-generator';
@@ -11,7 +18,7 @@ import { ParticleBackgroundComponent } from '../../shared/particle-background/pa
   imports: [ParticleBackgroundComponent],
   templateUrl: './hero.html',
   styleUrls: ['./hero.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly portfolioService = inject(PortfolioService);
@@ -19,17 +26,13 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly cvGeneratorService = inject(CVGeneratorService);
 
   developer: Developer | null = null;
-  titles: string[] = [
-    'Mobile Developer',
-    'Frontend Developer',
-    'Full Stack Developer'
-  ];
+  titles: string[] = ['Mobile Developer', 'Frontend Developer', 'Full Stack Developer'];
   currentTitleIndex = 0;
   private previousTitleIndex: number | null = null;
   private rollingTextIntervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
-    this.portfolioService.getDeveloper().subscribe(dev => {
+    this.portfolioService.getDeveloper().subscribe((dev) => {
       this.developer = dev;
     });
   }
@@ -62,7 +65,11 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       this.rollingTextIntervalId = setInterval(() => {
         this.previousTitleIndex = this.currentTitleIndex;
         this.currentTitleIndex = (this.currentTitleIndex + 1) % this.titles.length;
-        this.animationService.animateRollingText('.rolling-text', this.currentTitleIndex, this.previousTitleIndex);
+        this.animationService.animateRollingText(
+          '.rolling-text',
+          this.currentTitleIndex,
+          this.previousTitleIndex,
+        );
       }, 3000);
     }, 100);
   }

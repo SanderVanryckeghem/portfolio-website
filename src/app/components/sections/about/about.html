@@ -7,10 +7,7 @@
 
     <div class="about-wrapper">
       <div class="about-image">
-        <img
-          [src]="developer?.avatar || 'assets/images/avatar-placeholder.jpg'"
-          [alt]="developer?.name"
-          class="avatar">
+        <img [src]="developer?.avatar || 'assets/images/avatar-placeholder.jpg'" [alt]="developer?.name" class="avatar">
       </div>
 
       <div class="about-content">
@@ -35,7 +32,7 @@
           <h4>My Skills</h4>
           <div class="skills-grid">
             @for (skill of developer?.skills; track skill) {
-              <app-skill-badge [skill]="skill"></app-skill-badge>
+            <app-skill-badge [skill]="skill"></app-skill-badge>
             }
           </div>
         </div>
@@ -44,11 +41,11 @@
 
     <div class="stats-grid">
       @for (stat of stats; track stat.label) {
-        <div class="stat-card">
-          <i [class]="stat.icon"></i>
-          <h3>{{stat.value}}</h3>
-          <p>{{stat.label}}</p>
-        </div>
+      <div class="stat-card">
+        <i [class]="stat.icon"></i>
+        <h3>{{stat.value}}</h3>
+        <p>{{stat.label}}</p>
+      </div>
       }
     </div>
   </div>

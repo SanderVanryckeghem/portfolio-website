@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Project } from '../../../models/project.model';
 
 @Component({
@@ -7,7 +14,7 @@ import { Project } from '../../../models/project.model';
   imports: [],
   templateUrl: './project-modal.html',
   styleUrls: ['./project-modal.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectModalComponent {
   @Input() project: Project | null = null;
@@ -37,7 +44,7 @@ export class ProjectModalComponent {
     if (!date) return '';
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long'
+      month: 'long',
     });
   }
 }

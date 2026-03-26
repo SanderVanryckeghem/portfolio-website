@@ -6,7 +6,7 @@ import emailjs from '@emailjs/browser';
 import { environment } from '../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContactService {
   private readonly emailjsConfig = environment.emailjs;
@@ -20,24 +20,24 @@ export class ContactService {
       from_name: form.name,
       from_email: form.email,
       subject: form.subject,
-      message: form.message
+      message: form.message,
     };
 
     return from(
-      emailjs.send(this.emailjsConfig.serviceId, this.emailjsConfig.templateId, templateParams)
+      emailjs.send(this.emailjsConfig.serviceId, this.emailjsConfig.templateId, templateParams),
     ).pipe(
       map(() => ({
         success: true,
         message: 'Thank you for your message! I will get back to you as soon as possible.',
-        timestamp: new Date()
+        timestamp: new Date(),
       })),
       catchError(() => {
         return of({
           success: false,
           message: 'Something went wrong. Please try again later or email me directly.',
-          timestamp: new Date()
+          timestamp: new Date(),
         });
-      })
+      }),
     );
   }
 }

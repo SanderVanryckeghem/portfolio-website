@@ -9,29 +9,20 @@
 
     <div class="filter-buttons">
       @for (category of categories; track category) {
-        <button
-          [class.active]="selectedCategory === category"
-          (click)="filterProjects(category)"
-          class="filter-btn">
-          {{category}}
-        </button>
+      <button [class.active]="selectedCategory === category" (click)="filterProjects(category)" class="filter-btn">
+        {{category}}
+      </button>
       }
     </div>
 
     <div class="projects-grid">
       @for (project of filteredProjects; track project.id) {
-        <app-project-card
-          [project]="project"
-          (viewDetails)="openProjectModal($event)"
-          class="project-card">
-        </app-project-card>
+      <app-project-card [project]="project" (viewDetails)="openProjectModal($event)" class="project-card">
+      </app-project-card>
       }
     </div>
   </div>
 </section>
 
-<app-project-modal
-  [project]="selectedProject"
-  [isOpen]="isModalOpen"
-  (closeModal)="closeProjectModal()">
+<app-project-modal [project]="selectedProject" [isOpen]="isModalOpen" (closeModal)="closeProjectModal()">
 </app-project-modal>

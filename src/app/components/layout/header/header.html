@@ -10,37 +10,27 @@
         <!-- Desktop Navigation -->
         <ul class="nav-links desktop-nav">
           @for (link of navLinks; track link.href) {
-            <li>
-              <a
-                [class.active]="activeSection === link.href"
-                (click)="navigateToSection(link.href)"
-                class="nav-link">
-                {{link.label}}
-              </a>
-            </li>
+          <li>
+            <a [class.active]="activeSection === link.href" (click)="navigateToSection(link.href)" class="nav-link">
+              {{link.label}}
+            </a>
+          </li>
           }
         </ul>
 
         <!-- Theme Toggle, Color Toggle & Mobile Menu -->
         <div class="nav-actions">
-          <button
-            class="color-toggle"
-            (click)="toggleColorScheme()"
+          <button class="color-toggle" (click)="toggleColorScheme()"
             [title]="(colorScheme$ | async) === 'orange' ? 'Switch to Teal' : 'Switch to Orange'">
             <span class="color-indicator" [ngClass]="(colorScheme$ | async) === 'orange' ? 'orange' : 'teal'"></span>
           </button>
 
-          <button
-            class="theme-toggle"
-            (click)="toggleTheme()"
+          <button class="theme-toggle" (click)="toggleTheme()"
             [title]="(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'">
             <i [ngClass]="(isDarkMode$ | async) ? 'fas fa-bolt' : 'fas fa-moon'"></i>
           </button>
 
-          <button
-            class="mobile-menu-toggle"
-            (click)="toggleMobileMenu()"
-            [class.active]="isMobileMenuOpen">
+          <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
             <span></span>
             <span></span>
             <span></span>
@@ -54,15 +44,12 @@
   <div class="mobile-menu" [class.open]="isMobileMenuOpen">
     <ul class="mobile-nav-links">
       @for (link of navLinks; track link.href) {
-        <li>
-          <a
-            [class.active]="activeSection === link.href"
-            (click)="navigateToSection(link.href)"
-            class="mobile-nav-link">
-            <i [class]="link.icon"></i>
-            <span>{{link.label}}</span>
-          </a>
-        </li>
+      <li>
+        <a [class.active]="activeSection === link.href" (click)="navigateToSection(link.href)" class="mobile-nav-link">
+          <i [class]="link.icon"></i>
+          <span>{{link.label}}</span>
+        </a>
+      </li>
       }
     </ul>
   </div>

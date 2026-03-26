@@ -11,7 +11,7 @@ import { ProjectModalComponent } from '../../shared/project-modal/project-modal'
   imports: [ProjectCardComponent, ProjectModalComponent],
   templateUrl: './projects.html',
   styleUrls: ['./projects.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectsComponent implements OnInit, AfterViewInit {
   private readonly portfolioService = inject(PortfolioService);
@@ -41,12 +41,12 @@ export class ProjectsComponent implements OnInit, AfterViewInit {
     this.portfolioService.getProjects().subscribe({
       next: (projects) => {
         this.projects = projects;
-        this.filteredProjects = projects.filter(p => p.featured);
+        this.filteredProjects = projects.filter((p) => p.featured);
         this.isLoading = false;
       },
       error: () => {
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -56,15 +56,15 @@ export class ProjectsComponent implements OnInit, AfterViewInit {
     if (category === 'All') {
       this.filteredProjects = this.projects;
     } else if (category === 'Featured') {
-      this.filteredProjects = this.projects.filter(project => project.featured);
+      this.filteredProjects = this.projects.filter((project) => project.featured);
     } else {
       const categoryMap: Record<string, ProjectCategory> = {
         'Web Application': ProjectCategory.WEB_APP,
-        'Mobile Application': ProjectCategory.MOBILE_APP
+        'Mobile Application': ProjectCategory.MOBILE_APP,
       };
 
-      this.filteredProjects = this.projects.filter(project =>
-        project.category === categoryMap[category]
+      this.filteredProjects = this.projects.filter(
+        (project) => project.category === categoryMap[category],
       );
     }
 
@@ -74,12 +74,16 @@ export class ProjectsComponent implements OnInit, AfterViewInit {
   }
 
   private animateProjectCards(): void {
-    this.animationService.animateStagger('.project-card', {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.6
-    }, 0.1);
+    this.animationService.animateStagger(
+      '.project-card',
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+      },
+      0.1,
+    );
   }
 
   openProjectModal(project: Project): void {
