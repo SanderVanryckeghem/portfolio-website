@@ -36,7 +36,7 @@ export class PortfolioService {
       title: 'Portfolio Website',
       description: 'Modern, animated portfolio website built with Angular 20 showcasing my projects and skills.',
       longDescription: 'A fully responsive portfolio website built with Angular 20 using standalone components, signals, and modern best practices. Features include: GSAP-powered animations with ScrollTrigger, 3D rolling text effect using SplitText, particle background, dark/light theme toggle, contact form with rate limiting, and smooth scroll navigation. The site showcases my projects, technologies, work experience, and certifications.',
-      technologies: ['Angular', 'TypeScript', 'SCSS', 'GSAP', 'RxJS'],
+      technologies: ['Angular', 'TypeScript', 'SCSS', 'GSAP', 'RxJS', 'Github Actions', 'Github Pages'],
       imageUrl: 'assets/images/projects/portfolio.png',
       githubUrl: 'https://github.com/SanderVanryckeghem/portfolio-website',
       featured: true,
@@ -48,7 +48,7 @@ export class PortfolioService {
       title: 'Bakkerij Vanryckeghem',
       description: 'Modern, responsive website for a traditional Belgian bakery with SEO optimization.',
       longDescription: 'A fully responsive and SEO-optimized website for a traditional Belgian bakery in Harelbeke. Built with Angular v20 using modern practices like signal-based reactivity, OnPush change detection, and lazy-loaded routes. Features a centralized ContentService for managing products, categories, FAQs, and opening hours with automatic image preloading.',
-      technologies: ['Angular', 'TypeScript', 'TailwindCSS', 'RxJS', 'Signals'],
+      technologies: ['Angular', 'TypeScript', 'TailwindCSS', 'RxJS', 'Signals', 'Github Actions', 'Github Pages'],
       imageUrl: 'assets/images/projects/bakkerij_vanryckeghem.png',
       githubUrl: 'https://github.com/SanderVanryckeghem/bakkerij_vanryckeghem',
       featured: true,
@@ -212,7 +212,7 @@ export class PortfolioService {
       institution: 'VTI Waregem',
       year: '2017 - 2020',
       description: 'Technical secondary education',
-      technologies: ['C#', 'C', 'PLC', 'CSS', 'JavaScript', 'Arduino']
+      technologies: ['C#', 'C', 'PLC', 'JavaScript', 'Arduino']
     }
   ];
 
@@ -224,7 +224,7 @@ export class PortfolioService {
       startDate: new Date('2025-05-01'),
       endDate: new Date('2025-12-31'),
       current: false,
-      description: 'For my third term at Silverfin, I switched from Team Platform to Team UK. Within this team, I work on updating Corporate Tax templates to support multiple business types. The team consists of 5 internal BSO Developers and another Axxes Consultant.',
+      description: 'For my third term at Silverfin, I switched from Team Platform to Team UK. Within this team, I work on updating Corporate Tax templates to support multiple business types. The UK-team is based in the UK office so this was a fully remote role.',
       achievements: [
         'Updating existing templates',
         'Performing code reviews',
@@ -323,6 +323,23 @@ export class PortfolioService {
       technologies: ['React Native', 'TypeScript', 'Python', 'Figma', 'MobX'],
       location: 'Belgium',
       type: EmploymentType.INTERNSHIP
+    },
+    {
+      id: 7,
+      company: 'Axxes',
+      position: 'Angular Developer',
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2026-02-01'),
+      current: false,
+      description: 'During my beach period I worked on a intern Angular project where I developed a feature for the Axxes portal. This was a great opportunity to gain more experience with Angular.',
+      achievements: [
+        'Creation of sidebar menu and UI components',
+        'Integration of MSAL for authentication',
+        'Mobile responsiveness'
+      ],
+      technologies: ['Angular', 'TypeScript', 'MSAL'],
+      location: 'Belgium',
+      type: EmploymentType.FULL_TIME
     }
   ];
 
@@ -357,7 +374,10 @@ export class PortfolioService {
   }
 
   getExperiences(): Observable<Experience[]> {
-    return of(this.experiences);
+    const sorted = [...this.experiences].sort((a, b) =>
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+    return of(sorted);
   }
 
   getCertificates(): Observable<Certificate[]> {

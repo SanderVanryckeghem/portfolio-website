@@ -242,7 +242,12 @@ export class CVGeneratorService {
 
     yPosition = this.addSectionTitle(doc, 'Work Experience', margin, yPosition, colors);
 
-    for (const exp of experiences) {
+    // Sort experiences by startDate (newest first)
+    const sortedExperiences = [...experiences].sort((a, b) =>
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+
+    for (const exp of sortedExperiences) {
       // Check for page break
       if (yPosition > 250) {
         doc.addPage();
@@ -295,7 +300,7 @@ export class CVGeneratorService {
         yPosition += techLines.length * 4;
       }
 
-      yPosition += 6;
+      yPosition += 12;
     }
 
     return yPosition;
@@ -348,7 +353,7 @@ export class CVGeneratorService {
         yPosition += techLines.length * 4;
       }
 
-      yPosition += 6;
+      yPosition += 12;
     }
 
     return yPosition;
@@ -401,7 +406,7 @@ export class CVGeneratorService {
         yPosition += 4;
       }
 
-      yPosition += 5;
+      yPosition += 12;
     }
 
     return yPosition;
