@@ -1,59 +1,104 @@
-# PortfolioWebsite
+# Portfolio Website
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+A modern, animated portfolio website built with Angular 20, showcasing projects, skills, work experience, and certifications.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Responsive Design** - Fully responsive layout that works on desktop, tablet, and mobile devices
+- **Dark/Light Theme** - Toggle between dark and light themes with multiple color schemes
+- **Animated UI** - Smooth animations powered by GSAP with ScrollTrigger and SplitText
+- **Particle Background** - Interactive particle animation in the hero section
+- **Project Showcase** - Filterable project gallery with detailed modal views
+- **Work Experience Timeline** - Visual timeline of professional experience
+- **Skills Display** - Technology proficiency overview with categories
+- **Certificates Section** - Display of professional certifications
+- **Contact Form** - Integrated contact form with EmailJS
+- **Dynamic CV Generator** - Generate and download a professional PDF CV with:
+  - Automatic data population from portfolio content
+  - Dynamic color scheme matching the active website theme
+  - Sections for skills, experience, education, projects, and certificates
+  - Professional layout with proper formatting
+
+## Technologies
+
+- **Framework**: Angular 20 (Standalone Components, Signals)
+- **Styling**: SCSS with CSS Custom Properties
+- **Animations**: GSAP (ScrollTrigger, SplitText)
+- **PDF Generation**: jsPDF with jspdf-autotable
+- **Email**: EmailJS
+- **Icons**: Font Awesome
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/SanderVanryckeghem/portfolio-website.git
+
+# Navigate to the project directory
+cd portfolio-website
+
+# Install dependencies
+npm install
+```
+
+### Development Server
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navigate to `http://localhost:4200/`. The application will automatically reload on file changes.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Build
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build artifacts will be stored in the `dist/` directory.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Running Tests
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## Project Structure
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```
+src/
+├── app/
+│   ├── components/
+│   │   ├── sections/          # Page sections (hero, projects, experience, etc.)
+│   │   └── shared/            # Reusable components (navbar, project-modal, etc.)
+│   ├── models/                # TypeScript interfaces
+│   ├── services/              # Angular services
+│   │   ├── portfolio.ts       # Portfolio data service
+│   │   ├── cv-generator.ts    # PDF CV generation service
+│   │   ├── animation.ts       # GSAP animation service
+│   │   ├── theme.ts           # Theme management service
+│   │   └── contact.ts         # Contact form service
+│   └── styles/                # Global styles and variables
+└── assets/                    # Static assets (images, fonts)
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Customization
 
-## Additional Resources
+### Portfolio Data
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+All portfolio data (projects, experience, education, skills, certificates) is managed in `src/app/services/portfolio.ts`.
+
+### Theme Colors
+
+Color schemes are defined in `src/app/styles/_variables.scss`. The CV generator automatically uses the active color scheme.
+
+## License
+
+This project is open source and available under the MIT License.
