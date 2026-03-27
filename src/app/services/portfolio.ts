@@ -62,6 +62,7 @@ export class PortfolioService {
       featured: true,
       category: ProjectCategory.WEB_APP,
       completedDate: new Date('2025-02-01'),
+      showInCV: true,
     },
     {
       id: 1,
@@ -84,6 +85,7 @@ export class PortfolioService {
       featured: true,
       category: ProjectCategory.WEB_APP,
       completedDate: new Date('2025-02-01'),
+      showInCV: true,
     },
     {
       id: 2,
@@ -127,6 +129,7 @@ export class PortfolioService {
       featured: true,
       category: ProjectCategory.MOBILE_APP,
       completedDate: new Date('2023-06-01'),
+      showInCV: true,
     },
     {
       id: 5,
@@ -524,6 +527,10 @@ export class PortfolioService {
 
   getFeaturedProjects(): Observable<Project[]> {
     return of(this.sortByCompletedDate(this.projects.filter((p) => p.featured)));
+  }
+
+  getCVProjects(): Observable<Project[]> {
+    return of(this.sortByCompletedDate(this.projects.filter((p) => p.showInCV)));
   }
 
   private sortByCompletedDate(projects: Project[]): Project[] {

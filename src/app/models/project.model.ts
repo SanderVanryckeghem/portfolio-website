@@ -10,6 +10,7 @@ export interface Project {
   featured?: boolean;
   category?: ProjectCategory;
   completedDate?: Date;
+  showInCV?: boolean;
 }
 
 export enum ProjectCategory {

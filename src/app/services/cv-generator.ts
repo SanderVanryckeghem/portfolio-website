@@ -4,11 +4,28 @@ import { PortfolioService } from './portfolio';
 import { Developer } from '../models/developer.model';
 import { Experience } from '../models/experience.model';
 import { Education } from '../models/education.model';
-import { Project } from '../models/project.model';
 import { Technology } from '../models/technology.model';
 import { Certificate } from '../models/certificate.model';
+import { Project } from '../models/project.model';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
+interface CVColors {
+  primary: [number, number, number];
+  dark: [number, number, number];
+  gray: [number, number, number];
+  lightGray: [number, number, number];
+  sidebarBg: [number, number, number];
+  white: [number, number, number];
+}
+
+interface CVData {
+  developer: Developer;
+  experiences: Experience[];
+  education: Education[];
+  technologies: Technology[];
+  certificates: Certificate[];
+  projects: Project[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -16,47 +33,35 @@ import autoTable from 'jspdf-autotable';
 export class CVGeneratorService {
   private readonly portfolioService = inject(PortfolioService);
 
-  private getActiveColors(): {
-    primary: [number, number, number];
-    secondary: [number, number, number];
-    dark: [number, number, number];
-    gray: [number, number, number];
-    lightGray: [number, number, number];
-  } {
+  // Layout constants
+  private readonly PAGE_HEIGHT = 297; // A4 height in mm
+  private readonly SIDEBAR_WIDTH = 70;
+  private readonly CONTENT_START = 75;
+  private readonly CONTENT_WIDTH = 125;
+  private readonly SIDEBAR_PADDING = 8;
+
+  private getActiveColors(): CVColors {
     const rootStyles = getComputedStyle(document.documentElement);
-
-    // Get the accent color from CSS variable
     const accentColor = rootStyles.getPropertyValue('--accent').trim();
-    const accentHoverColor = rootStyles.getPropertyValue('--accent-hover').trim();
-
-    // Parse gradient to get secondary color (the end color of the gradient)
-    const gradient = rootStyles.getPropertyValue('--gradient').trim();
-    const gradientColors = gradient.match(/#[a-fA-F0-9]{6}/g) || [];
-    const secondaryHex = gradientColors[1] || accentHoverColor || accentColor;
 
     return {
       primary: this.hexToRgb(accentColor),
-      secondary: this.hexToRgb(secondaryHex),
-      dark: [26, 26, 26] as [number, number, number], // Dark text for PDF readability
-      gray: [102, 102, 102] as [number, number, number], // Secondary text
-      lightGray: [229, 229, 229] as [number, number, number], // Borders/dividers
+      dark: [51, 51, 51],
+      gray: [102, 102, 102],
+      lightGray: [180, 180, 180],
+      sidebarBg: [235, 235, 235],
+      white: [255, 255, 255],
     };
   }
 
   private hexToRgb(hex: string): [number, number, number] {
-    // Remove # if present
     hex = hex.replace('#', '');
-
-    // Parse the hex values
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-
-    // Return default orange if parsing fails
     if (isNaN(r) || isNaN(g) || isNaN(b)) {
-      return [249, 115, 22]; // Default to #f97316
+      return [249, 115, 22]; // Default orange
     }
-
     return [r, g, b];
   }
 
@@ -65,450 +70,591 @@ export class CVGeneratorService {
       developer: this.portfolioService.getDeveloper(),
       experiences: this.portfolioService.getExperiences(),
       education: this.portfolioService.getEducation(),
-      projects: this.portfolioService.getProjects(),
       technologies: this.portfolioService.getTechnologies(),
       certificates: this.portfolioService.getCertificates(),
-    }).subscribe((data) => {
-      this.createPDF(data);
+      projects: this.portfolioService.getCVProjects(),
+    }).subscribe(async (data) => {
+      const avatarBase64 = await this.loadImageAsBase64(data.developer.avatar);
+      this.createPDF(data, avatarBase64);
     });
   }
 
-  private createPDF(data: {
-    developer: Developer;
-    experiences: Experience[];
-    education: Education[];
-    projects: Project[];
-    technologies: Technology[];
-    certificates: Certificate[];
-  }): void {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    const contentWidth = pageWidth - margin * 2;
-    let yPosition = margin;
+  private loadImageAsBase64(imagePath: string): Promise<string | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = imagePath;
+    });
+  }
 
-    // Get active colors from website theme
+  private createPDF(data: CVData, avatarBase64: string | null): void {
+    const doc = new jsPDF();
     const colors = this.getActiveColors();
 
-    // Header Section
-    yPosition = this.addHeader(doc, data.developer, margin, yPosition, contentWidth, colors);
+    // Page 1
+    this.drawSidebarBackground(doc, colors);
+    let sidebarY = this.addSidebarHeader(doc, data.developer, colors);
+    sidebarY = this.addSidebarEducation(doc, data.education, sidebarY, colors);
+    sidebarY = this.addSidebarLanguages(doc, sidebarY, colors);
+    this.addSidebarExpertise(doc, data.technologies, sidebarY, colors);
 
-    // About Section
-    yPosition = this.addAboutSection(doc, data.developer, margin, yPosition, contentWidth, colors);
+    let contentY = this.addContentHeader(doc, data.developer, colors, avatarBase64);
+    contentY = this.addContentProfile(doc, data.developer, contentY, colors);
+    contentY = this.addContentExperience(doc, data.experiences, contentY, colors);
 
-    // Skills Section
-    yPosition = this.addSkillsSection(doc, data.technologies, margin, yPosition, colors);
+    // Page 2
+    doc.addPage();
+    this.drawSidebarBackground(doc, colors);
+    let sidebar2Y = this.addSidebarProfile(doc, 15, colors);
+    this.addSidebarInterests(doc, sidebar2Y, colors);
 
-    // Check if we need a new page before work experience
-    if (yPosition > 220) {
-      doc.addPage();
-      yPosition = margin;
-    }
+    let content2Y = this.addContentCertificates(doc, data.certificates, 20, colors);
+    this.addContentProjects(doc, data.projects, content2Y, colors);
 
-    // Work Experience Section
-    yPosition = this.addExperienceSection(
-      doc,
-      data.experiences,
-      margin,
-      yPosition,
-      contentWidth,
-      colors,
-    );
-
-    // Education Section
-    yPosition = this.addEducationSection(
-      doc,
-      data.education,
-      margin,
-      yPosition,
-      contentWidth,
-      colors,
-    );
-
-    // Projects Section
-    yPosition = this.addProjectsSection(
-      doc,
-      data.projects,
-      margin,
-      yPosition,
-      contentWidth,
-      colors,
-    );
-
-    // Certificates Section
-    this.addCertificatesSection(doc, data.certificates, margin, yPosition, colors);
-
-    // Save the PDF
+    // Save
     const fileName = `${data.developer.name.replace(/\s+/g, '_')}_CV.pdf`;
     doc.save(fileName);
   }
 
-  private addHeader(
-    doc: jsPDF,
-    developer: Developer,
-    margin: number,
-    yPosition: number,
-    contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>,
-  ): number {
-    const pageWidth = doc.internal.pageSize.getWidth();
+  private drawSidebarBackground(doc: jsPDF, colors: CVColors): void {
+    doc.setFillColor(...colors.sidebarBg);
+    doc.rect(0, 0, this.SIDEBAR_WIDTH, this.PAGE_HEIGHT, 'F');
+  }
 
-    // Name
-    doc.setFontSize(28);
+  // ============ SIDEBAR - PAGE 1 ============
+
+  private addSidebarHeader(doc: jsPDF, developer: Developer, colors: CVColors): number {
+    let y = 25;
+    const x = this.SIDEBAR_PADDING;
+
+    // Name split into first and last
+    const nameParts = developer.name.split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    // First name
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
     doc.setTextColor(...colors.dark);
-    doc.text(developer.name, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 10;
+    doc.text(firstName, x, y);
+    y += 9;
 
-    // Title
-    doc.setFontSize(14);
+    // Last name
+    doc.setFontSize(22);
+    doc.text(lastName, x, y);
+    y += 12;
+
+    // Role badges with orange bar
+    const roles = ['FRONT-END DEVELOPER', 'MOBILE DEVELOPER', 'FULLSTACK DEVELOPER'];
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...colors.primary);
-    doc.text(developer.title, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 8;
 
-    // Contact info
-    doc.setFontSize(10);
+    for (const role of roles) {
+      // Orange bar
+      doc.setFillColor(...colors.primary);
+      doc.rect(x, y - 3.5, 2, 4, 'F');
+      // Role text
+      doc.setTextColor(...colors.dark);
+      doc.text(role, x + 5, y);
+      y += 6;
+    }
+
+    y += 4;
+
+    // Location
+    doc.setFontSize(9);
     doc.setTextColor(...colors.gray);
-    const contactInfo = `${developer.email} | ${developer.location}`;
-    doc.text(contactInfo, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 6;
+    doc.text(developer.location, x, y);
+    y += 15;
 
-    // Social links
-    const socialLinks: string[] = [];
-    if (developer.social?.github) {
-      socialLinks.push('GitHub: ' + developer.social.github.replace('https://', ''));
-    }
-    if (developer.social?.linkedin) {
-      socialLinks.push('LinkedIn: ' + developer.social.linkedin.replace('https://', ''));
-    }
-    if (socialLinks.length > 0) {
-      doc.setFontSize(9);
-      doc.text(socialLinks.join(' | '), pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 4;
-    }
-
-    // Divider line
-    yPosition += 4;
-    doc.setDrawColor(...colors.lightGray);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPosition, margin + contentWidth, yPosition);
-    yPosition += 10;
-
-    return yPosition;
+    return y;
   }
 
-  private addAboutSection(
+  private addSidebarEducation(
     doc: jsPDF,
-    developer: Developer,
-    margin: number,
-    yPosition: number,
-    contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>,
+    education: Education[],
+    startY: number,
+    colors: CVColors,
   ): number {
+    let y = startY;
+    const x = this.SIDEBAR_PADDING;
+    const maxWidth = this.SIDEBAR_WIDTH - this.SIDEBAR_PADDING * 2;
+
     // Section title
-    yPosition = this.addSectionTitle(doc, 'About Me', margin, yPosition, colors);
+    y = this.addSidebarSectionTitle(doc, 'EDUCATION', x, y, colors);
 
-    // Bio text
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...colors.dark);
-    const bioLines = doc.splitTextToSize(developer.bio, contentWidth);
-    doc.text(bioLines, margin, yPosition);
-    yPosition += bioLines.length * 5 + 10;
+    for (const edu of education) {
+      // Degree (bold, uppercase for first line)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.dark);
 
-    return yPosition;
+      const degreeLines = doc.splitTextToSize(edu.degree.toUpperCase(), maxWidth);
+      doc.text(degreeLines, x, y);
+      y += degreeLines.length * 4;
+
+      // Institution
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...colors.dark);
+      doc.text(edu.institution, x, y);
+      y += 4;
+
+      // Year
+      doc.setFontSize(8);
+      doc.setTextColor(...colors.gray);
+      doc.text(edu.year, x, y);
+      y += 10;
+    }
+
+    return y;
   }
 
-  private addSkillsSection(
+  private addSidebarLanguages(doc: jsPDF, startY: number, colors: CVColors): number {
+    let y = startY;
+    const x = this.SIDEBAR_PADDING;
+
+    y = this.addSidebarSectionTitle(doc, 'LANGUAGES', x, y, colors);
+
+    const languages = [
+      { name: 'Dutch', level: 'Native language' },
+      { name: 'English', level: 'Professional' },
+      { name: 'French', level: 'Basic' },
+    ];
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+
+    for (const lang of languages) {
+      doc.setFillColor(...colors.dark);
+      doc.circle(x + 1.5, y - 1.2, 0.8, 'F');
+      doc.setTextColor(...colors.dark);
+      doc.text(`${lang.name} – ${lang.level}`, x + 5, y);
+      y += 5;
+    }
+
+    return y + 8;
+  }
+
+  private addSidebarExpertise(
     doc: jsPDF,
     technologies: Technology[],
-    margin: number,
-    yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>,
+    startY: number,
+    colors: CVColors,
   ): number {
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const contentWidth = pageWidth - margin * 2;
+    let y = startY;
+    const x = this.SIDEBAR_PADDING;
 
-    yPosition = this.addSectionTitle(doc, 'Skills', margin, yPosition, colors);
+    y = this.addSidebarSectionTitle(doc, 'EXPERTISE', x, y, colors);
 
-    // Sort by proficiency and display as inline list
-    const sortedTech = [...technologies].sort((a, b) => b.proficiency - a.proficiency);
-    const skillNames = sortedTech.map((tech) => tech.name);
-    const skillsText = skillNames.join('  •  ');
+    // Sort by proficiency and take top skills
+    const skills = [...technologies]
+      .sort((a, b) => b.proficiency - a.proficiency)
+      .slice(0, 10)
+      .map((t) => t.name);
 
-    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
     doc.setTextColor(...colors.dark);
-    const skillLines = doc.splitTextToSize(skillsText, contentWidth);
-    doc.text(skillLines, margin, yPosition);
-    yPosition += skillLines.length * 5 + 10;
 
-    return yPosition;
-  }
-
-  private addExperienceSection(
-    doc: jsPDF,
-    experiences: Experience[],
-    margin: number,
-    yPosition: number,
-    contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>,
-  ): number {
-    // Check if we need a new page
-    if (yPosition > 240) {
-      doc.addPage();
-      yPosition = 20;
+    for (const skill of skills) {
+      doc.setFillColor(...colors.dark);
+      doc.circle(x + 1.5, y - 1.2, 0.8, 'F');
+      doc.text(skill, x + 5, y);
+      y += 5;
     }
 
-    yPosition = this.addSectionTitle(doc, 'Work Experience', margin, yPosition, colors);
+    return y;
+  }
 
-    // Sort experiences by startDate (newest first)
-    const sortedExperiences = [...experiences].sort(
+  // ============ SIDEBAR - PAGE 2 ============
+
+  private addSidebarProfile(doc: jsPDF, startY: number, colors: CVColors): number {
+    let y = startY;
+    const x = this.SIDEBAR_PADDING;
+
+    y = this.addSidebarSectionTitle(doc, 'PROFILE', x, y, colors);
+
+    const traits = ['Targeted', 'Teamplayer', 'Eager to learn', 'Caring', 'Problem-solving'];
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.dark);
+
+    for (const trait of traits) {
+      doc.setFillColor(...colors.dark);
+      doc.circle(x + 1.5, y - 1.2, 0.8, 'F');
+      doc.text(trait, x + 5, y);
+      y += 5;
+    }
+
+    return y + 10;
+  }
+
+  private addSidebarInterests(doc: jsPDF, startY: number, colors: CVColors): number {
+    let y = startY;
+    const x = this.SIDEBAR_PADDING;
+
+    y = this.addSidebarSectionTitle(doc, 'INTERESTS', x, y, colors);
+
+    const interests = ['Skiing', 'Travelling', 'Cycling', 'Padel'];
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.dark);
+
+    for (const interest of interests) {
+      doc.setFillColor(...colors.dark);
+      doc.circle(x + 1.5, y - 1.2, 0.8, 'F');
+      doc.text(interest, x + 5, y);
+      y += 5;
+    }
+
+    return y;
+  }
+
+  private addSidebarSectionTitle(
+    doc: jsPDF,
+    title: string,
+    x: number,
+    y: number,
+    colors: CVColors,
+  ): number {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...colors.dark);
+
+    // Add letter spacing effect
+    const spacedTitle = title.split('').join(' ');
+    doc.text(spacedTitle, x, y);
+
+    // Underline
+    y += 2;
+    doc.setDrawColor(...colors.dark);
+    doc.setLineWidth(0.5);
+    doc.line(x, y, x + 20, y);
+
+    return y + 8;
+  }
+
+  // ============ CONTENT - PAGE 1 ============
+
+  private addContentHeader(
+    doc: jsPDF,
+    developer: Developer,
+    colors: CVColors,
+    avatarBase64: string | null,
+  ): number {
+    let y = 25;
+    const x = this.CONTENT_START;
+
+    // Profile photo
+    const photoSize = 25;
+    const photoX = x + 5;
+    const photoY = y;
+
+    if (avatarBase64) {
+      // Add the actual profile image
+      doc.addImage(avatarBase64, 'PNG', photoX, photoY, photoSize, photoSize);
+    } else {
+      // Fallback: draw placeholder circle
+      doc.setDrawColor(...colors.lightGray);
+      doc.setLineWidth(0.5);
+      doc.circle(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2);
+    }
+
+    // Contact info to the right of photo
+    const contactX = photoX + photoSize + 15;
+    let contactY = y + 5;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.dark);
+
+    // Email
+    doc.text(developer.email, contactX, contactY);
+    contactY += 6;
+
+    // Phone (placeholder - you can add phone to developer model if needed)
+    doc.text('+32499470343', contactX, contactY);
+    contactY += 6;
+
+    // LinkedIn
+    if (developer.social?.linkedin) {
+      const linkedinUrl = developer.social.linkedin.replace('https://', '');
+      const linkedinLines = doc.splitTextToSize(linkedinUrl, 55);
+      doc.text(linkedinLines, contactX, contactY);
+      contactY += linkedinLines.length * 4 + 2;
+    }
+
+    // GitHub
+    if (developer.social?.github) {
+      doc.text(developer.social.github.replace('https://', ''), contactX, contactY);
+    }
+
+    return y + photoSize + 15;
+  }
+
+  private addContentProfile(
+    doc: jsPDF,
+    developer: Developer,
+    startY: number,
+    colors: CVColors,
+  ): number {
+    let y = startY;
+    const x = this.CONTENT_START;
+    const maxWidth = this.CONTENT_WIDTH - 10;
+
+    y = this.addContentSectionTitle(doc, 'PROFILE', x, y, colors);
+
+    // Bio text from developer data
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.dark);
+
+    // Use the bio from developer data, with additional paragraph for personal touch
+    const bioText = developer.bio;
+    const bioLines = doc.splitTextToSize(bioText, maxWidth);
+    doc.text(bioLines, x, y);
+    y += bioLines.length * 4 + 10;
+
+    return y;
+  }
+
+  private addContentExperience(
+    doc: jsPDF,
+    experiences: Experience[],
+    startY: number,
+    colors: CVColors,
+  ): number {
+    let y = startY;
+    const x = this.CONTENT_START;
+    const maxWidth = this.CONTENT_WIDTH - 10;
+
+    y = this.addContentSectionTitle(doc, 'EXPERIENCE', x, y, colors);
+
+    // Sort experiences by start date (newest first)
+    const sortedExp = [...experiences].sort(
       (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
 
-    for (const exp of sortedExperiences) {
-      // Check for page break
-      if (yPosition > 250) {
+    // Show each experience individually
+    for (const exp of sortedExp) {
+      if (y > 250) {
         doc.addPage();
-        yPosition = 20;
+        this.drawSidebarBackground(doc, colors);
+        y = 20;
       }
 
-      // Position & Company
-      doc.setFontSize(11);
+      // Position title
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...colors.dark);
-      doc.text(exp.position, margin, yPosition);
-      yPosition += 5;
-
-      // Company and dates
       doc.setFontSize(10);
+      doc.setTextColor(...colors.dark);
+      doc.text(exp.position, x, y);
+
+      // Date on the right
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...colors.primary);
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.gray);
       const dateStr = exp.current
-        ? `${this.formatDate(exp.startDate)} - Present`
-        : `${this.formatDate(exp.startDate)} - ${this.formatDate(exp.endDate!)}`;
-      doc.text(`${exp.company} | ${dateStr}`, margin, yPosition);
-      yPosition += 5;
+        ? `${this.formatDateShort(exp.startDate)} – Present`
+        : `${this.formatDateShort(exp.startDate)} – ${this.formatDateShort(exp.endDate!)}`;
+      doc.text(dateStr, x + maxWidth - 30, y);
+      y += 5;
+
+      // Company
+      doc.setTextColor(...colors.dark);
+      doc.text(exp.company, x, y);
+      y += 6;
 
       // Description
       doc.setFontSize(9);
-      doc.setTextColor(...colors.gray);
-      const descLines = doc.splitTextToSize(exp.description, contentWidth);
-      doc.text(descLines, margin, yPosition);
-      yPosition += descLines.length * 4 + 3;
+      const descLines = doc.splitTextToSize(exp.description, maxWidth);
+      doc.text(descLines, x, y);
+      y += descLines.length * 4 + 2;
 
-      // Achievements
+      // Achievements (if any)
       if (exp.achievements && exp.achievements.length > 0) {
-        doc.setFontSize(9);
-        doc.setTextColor(...colors.dark);
         for (const achievement of exp.achievements.slice(0, 3)) {
-          const bulletText = `• ${achievement}`;
-          const achLines = doc.splitTextToSize(bulletText, contentWidth - 5);
-          doc.text(achLines, margin + 3, yPosition);
-          yPosition += achLines.length * 4;
+          doc.setFillColor(...colors.dark);
+          doc.circle(x + 3, y - 1, 0.6, 'F');
+          doc.text(achievement, x + 6, y);
+          y += 4;
         }
       }
 
       // Technologies
       if (exp.technologies && exp.technologies.length > 0) {
+        y += 2;
         doc.setFontSize(8);
-        doc.setTextColor(...colors.secondary);
-        const techText = exp.technologies.join(' • ');
-        const techLines = doc.splitTextToSize(techText, contentWidth);
-        doc.text(techLines, margin, yPosition);
-        yPosition += techLines.length * 4;
+        doc.setTextColor(...colors.primary);
+        const techText = exp.technologies.slice(0, 5).join(' • ');
+        doc.text(techText, x, y);
+        y += 4;
       }
 
-      yPosition += 12;
+      y += 8;
     }
 
-    return yPosition;
+    return y;
   }
 
-  private addEducationSection(
+  private addContentSectionTitle(
     doc: jsPDF,
-    education: Education[],
-    margin: number,
-    yPosition: number,
-    contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>,
+    title: string,
+    x: number,
+    y: number,
+    colors: CVColors,
   ): number {
-    // Check if we need a new page
-    if (yPosition > 240) {
-      doc.addPage();
-      yPosition = 20;
-    }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...colors.dark);
 
-    yPosition = this.addSectionTitle(doc, 'Education', margin, yPosition, colors);
+    // Add letter spacing effect
+    const spacedTitle = title.split('').join(' ');
+    doc.text(spacedTitle, x, y);
 
-    for (const edu of education) {
-      // Degree
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...colors.dark);
-      doc.text(edu.degree, margin, yPosition);
-      yPosition += 5;
+    // Underline
+    y += 2;
+    doc.setDrawColor(...colors.dark);
+    doc.setLineWidth(0.5);
+    doc.line(x, y, x + 25, y);
 
-      // Institution and year
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...colors.primary);
-      doc.text(`${edu.institution} | ${edu.year}`, margin, yPosition);
-      yPosition += 5;
-
-      // Description
-      doc.setFontSize(9);
-      doc.setTextColor(...colors.gray);
-      doc.text(edu.description, margin, yPosition);
-      yPosition += 5;
-
-      // Technologies learned
-      if (edu.technologies && edu.technologies.length > 0) {
-        doc.setFontSize(8);
-        doc.setTextColor(...colors.secondary);
-        const techText = edu.technologies.join(' • ');
-        const techLines = doc.splitTextToSize(techText, contentWidth);
-        doc.text(techLines, margin, yPosition);
-        yPosition += techLines.length * 4;
-      }
-
-      yPosition += 12;
-    }
-
-    return yPosition;
+    return y + 8;
   }
 
-  private addProjectsSection(
+  // ============ CONTENT - PAGE 2 ============
+
+  private addContentCertificates(
+    doc: jsPDF,
+    certificates: Certificate[],
+    startY: number,
+    colors: CVColors,
+  ): number {
+    let y = startY;
+    const x = this.CONTENT_START;
+    const maxWidth = this.CONTENT_WIDTH - 10;
+
+    y = this.addContentSectionTitle(doc, 'CERTIFICATES', x, y, colors);
+
+    // Sort by date (newest first)
+    const sortedCerts = [...certificates].sort(
+      (a, b) => new Date(b.achievedDate).getTime() - new Date(a.achievedDate).getTime(),
+    );
+
+    for (const cert of sortedCerts) {
+      // Certificate name
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...colors.dark);
+      doc.text(cert.name, x, y);
+
+      // Date on the right
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...colors.gray);
+      const dateStr = this.formatCertDate(cert.achievedDate);
+      const expiryStr = cert.expiryDate
+        ? ` - expires: ${this.formatCertDate(cert.expiryDate)}`
+        : ' - expires: never';
+      doc.text(`obtained: ${dateStr}${expiryStr}`, x + maxWidth - 50, y);
+      y += 5;
+
+      // Issuer
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.dark);
+      doc.text(cert.issuer, x, y);
+      y += 10;
+    }
+
+    return y;
+  }
+
+  private addContentProjects(
     doc: jsPDF,
     projects: Project[],
-    margin: number,
-    yPosition: number,
-    contentWidth: number,
-    colors: ReturnType<typeof this.getActiveColors>,
+    startY: number,
+    colors: CVColors,
   ): number {
-    // Check if we need a new page
-    if (yPosition > 220) {
-      doc.addPage();
-      yPosition = 20;
-    }
+    let y = startY + 5;
+    const x = this.CONTENT_START;
+    const maxWidth = this.CONTENT_WIDTH - 10;
 
-    yPosition = this.addSectionTitle(doc, 'Projects', margin, yPosition, colors);
+    if (projects.length === 0) return y;
+
+    y = this.addContentSectionTitle(doc, 'PROJECTS', x, y, colors);
 
     for (const project of projects) {
-      // Check for page break
-      if (yPosition > 250) {
+      if (y > 260) {
         doc.addPage();
-        yPosition = 20;
+        this.drawSidebarBackground(doc, colors);
+        y = 20;
       }
 
       // Project title
-      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
       doc.setTextColor(...colors.dark);
-      doc.text(project.title, margin, yPosition);
-      yPosition += 5;
+      doc.text(project.title, x, y);
+
+      // Date if available
+      if (project.completedDate) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...colors.gray);
+        doc.text(this.formatCertDate(project.completedDate), x + maxWidth - 15, y);
+      }
+      y += 5;
 
       // Description
-      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...colors.gray);
-      const descLines = doc.splitTextToSize(project.longDescription, contentWidth);
-      doc.text(descLines, margin, yPosition);
-      yPosition += descLines.length * 4 + 2;
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.dark);
+      const desc = project.longDescription || project.description;
+      const descLines = doc.splitTextToSize(desc, maxWidth);
+      doc.text(descLines.slice(0, 4), x, y); // Limit to 4 lines
+      y += Math.min(descLines.length, 4) * 4 + 2;
 
       // Technologies
       if (project.technologies && project.technologies.length > 0) {
         doc.setFontSize(8);
-        doc.setTextColor(...colors.secondary);
-        const techText = project.technologies.join(' • ');
-        doc.text(techText, margin, yPosition);
-        yPosition += 4;
+        doc.setTextColor(...colors.primary);
+        const techText = project.technologies.slice(0, 6).join(' • ');
+        doc.text(techText, x, y);
+        y += 4;
       }
 
-      yPosition += 12;
+      y += 8;
     }
 
-    return yPosition;
+    return y;
   }
 
-  private addCertificatesSection(
-    doc: jsPDF,
-    certificates: Certificate[],
-    margin: number,
-    yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>,
-  ): number {
-    // Check if we need a new page
-    if (yPosition > 220) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    yPosition = this.addSectionTitle(doc, 'Certificates', margin, yPosition, colors);
-
-    const certData = certificates.map((cert) => [
-      cert.name,
-      cert.issuer,
-      this.formatCertDate(cert.achievedDate),
-    ]);
-
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Certificate', 'Issuer', 'Date']],
-      body: certData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: colors.primary,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 9,
-      },
-      bodyStyles: {
-        fontSize: 9,
-        textColor: colors.dark,
-      },
-      margin: { left: margin, right: margin },
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
-    return yPosition;
-  }
-
-  private addSectionTitle(
-    doc: jsPDF,
-    title: string,
-    margin: number,
-    yPosition: number,
-    colors: ReturnType<typeof this.getActiveColors>,
-  ): number {
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...colors.primary);
-    doc.text(title, margin, yPosition);
-    yPosition += 2;
-
-    // Underline
-    doc.setDrawColor(...colors.primary);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPosition, margin + 40, yPosition);
-    yPosition += 8;
-
-    return yPosition;
-  }
-
-  private formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-    });
+  private formatDateShort(date: Date): string {
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${month}/${year}`;
   }
 
   private formatCertDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-    });
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${month}/${year}`;
   }
 }
