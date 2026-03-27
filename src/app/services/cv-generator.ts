@@ -113,16 +113,19 @@ export class CVGeneratorService {
 
     let contentY = this.addContentHeader(doc, data.developer, colors, avatarBase64);
     contentY = this.addContentProfile(doc, data.developer, contentY, colors);
-    contentY = this.addContentExperience(doc, data.experiences, contentY, colors);
+    const { createdNewPage } = this.addContentExperience(doc, data.experiences, contentY, colors);
 
-    // Page 2
+    // Page for Certificates and Projects
     doc.addPage();
     this.drawSidebarBackground(doc, colors);
-    let sidebar2Y = this.addSidebarProfile(doc, 15, colors);
-    this.addSidebarInterests(doc, sidebar2Y, colors);
+    // Only add Profile and Interests to sidebar if not already added during experience overflow
+    if (!createdNewPage) {
+      const sidebar2Y = this.addSidebarProfile(doc, 15, colors);
+      this.addSidebarInterests(doc, sidebar2Y, colors);
+    }
 
-    let content2Y = this.addContentCertificates(doc, data.certificates, 20, colors);
-    this.addContentProjects(doc, data.projects, content2Y, colors);
+    let content2Y = this.addContentProjects(doc, data.projects, 20, colors);
+    this.addContentCertificates(doc, data.certificates, content2Y, colors);
 
     // Save
     const fileName = `${data.developer.name.replace(/\s+/g, '_')}_CV.pdf`;
@@ -439,7 +442,7 @@ export class CVGeneratorService {
     experiences: Experience[],
     startY: number,
     colors: CVColors,
-  ): number {
+  ): { y: number; createdNewPage: boolean } {
     let y = startY;
     const x = this.CONTENT_START;
     const maxWidth = this.CONTENT_WIDTH - 10;
@@ -451,11 +454,20 @@ export class CVGeneratorService {
       (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
 
+    // Track if we've added sidebar content to overflow pages
+    let createdNewPage = false;
+
     // Show each experience individually
     for (const exp of sortedExp) {
       if (y > 250) {
         doc.addPage();
         this.drawSidebarBackground(doc, colors);
+        // Add Profile and Interests to sidebar on overflow pages
+        if (!createdNewPage) {
+          const sidebar2Y = this.addSidebarProfile(doc, 15, colors);
+          this.addSidebarInterests(doc, sidebar2Y, colors);
+          createdNewPage = true;
+        }
         y = 20;
       }
 
@@ -509,7 +521,7 @@ export class CVGeneratorService {
       y += 8;
     }
 
-    return y;
+    return { y, createdNewPage };
   }
 
   private addContentSectionTitle(
