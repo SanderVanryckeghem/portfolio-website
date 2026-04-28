@@ -16,7 +16,7 @@ export class ProjectCardComponent {
   isImageLoaded = false;
 
   getProjectImage(): string {
-    return this.project.imageUrl || 'assets/images/avatar.png';
+    return this.project.imageUrl || 'assets/images/avatar_normal.png';
   }
 
   onImageLoad(): void {

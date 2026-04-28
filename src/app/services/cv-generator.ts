@@ -364,9 +364,9 @@ export class CVGeneratorService {
     let y = 25;
     const x = this.CONTENT_START;
 
-    // Profile photo
+    // Profile photo - aligned with section titles
     const photoSize = 25;
-    const photoX = x + 5;
+    const photoX = x;
     const photoY = y;
 
     if (avatarBase64) {
@@ -381,31 +381,32 @@ export class CVGeneratorService {
 
     // Contact info to the right of photo
     const contactX = photoX + photoSize + 15;
+    const iconOffset = 5; // Space for icon + gap
     let contactY = y + 5;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...colors.dark);
 
-    // Email
-    doc.text(developer.email, contactX, contactY);
+    // Email with icon
+    this.drawEmailIcon(doc, contactX, contactY - 2, colors);
+    doc.text(developer.email, contactX + iconOffset, contactY);
     contactY += 6;
 
-    // Phone (placeholder - you can add phone to developer model if needed)
-    doc.text('+32499470343', contactX, contactY);
+    // Phone with icon
+    this.drawPhoneIcon(doc, contactX, contactY - 2, colors);
+    doc.text('+32499470343', contactX + iconOffset, contactY);
     contactY += 6;
 
-    // LinkedIn
-    if (developer.social?.linkedin) {
-      const linkedinUrl = developer.social.linkedin.replace('https://', '');
-      const linkedinLines = doc.splitTextToSize(linkedinUrl, 55);
-      doc.text(linkedinLines, contactX, contactY);
-      contactY += linkedinLines.length * 4 + 2;
-    }
+    // Website with icon
+    this.drawWebsiteIcon(doc, contactX, contactY - 2, colors);
+    doc.text('sandervanryckeghem.be', contactX + iconOffset, contactY);
+    contactY += 6;
 
-    // GitHub
+    // GitHub with icon
     if (developer.social?.github) {
-      doc.text(developer.social.github.replace('https://', ''), contactX, contactY);
+      this.drawGitHubIcon(doc, contactX, contactY - 2, colors);
+      doc.text(developer.social.github.replace('https://', ''), contactX + iconOffset, contactY);
     }
 
     return y + photoSize + 15;
@@ -662,6 +663,63 @@ export class CVGeneratorService {
     }
 
     return y;
+  }
+
+  // ============ ICONS ============
+
+  private drawEmailIcon(doc: jsPDF, x: number, y: number, colors: CVColors): void {
+    const size = 3;
+    doc.setDrawColor(...colors.primary);
+    doc.setLineWidth(0.3);
+    // Envelope rectangle
+    doc.rect(x, y, size, size * 0.7);
+    // Envelope flap (V shape)
+    doc.line(x, y, x + size / 2, y + size * 0.4);
+    doc.line(x + size / 2, y + size * 0.4, x + size, y);
+  }
+
+  private drawPhoneIcon(doc: jsPDF, x: number, y: number, colors: CVColors): void {
+    const size = 3;
+    doc.setDrawColor(...colors.primary);
+    doc.setFillColor(...colors.primary);
+    doc.setLineWidth(0.3);
+    // Phone rectangle with rounded appearance
+    doc.roundedRect(x + 0.3, y - 0.3, size * 0.6, size * 0.9, 0.3, 0.3, 'S');
+    // Small speaker line at top
+    doc.line(x + 0.7, y, x + 1.3, y);
+    // Home button circle at bottom
+    doc.circle(x + 1.2, y + size * 0.7, 0.2, 'S');
+  }
+
+  private drawWebsiteIcon(doc: jsPDF, x: number, y: number, colors: CVColors): void {
+    const size = 3;
+    const centerX = x + size / 2;
+    const centerY = y + size / 2 - 0.2;
+    doc.setDrawColor(...colors.primary);
+    doc.setLineWidth(0.3);
+    // Globe circle
+    doc.circle(centerX, centerY, size / 2, 'S');
+    // Horizontal line through middle
+    doc.line(x, centerY, x + size, centerY);
+    // Vertical ellipse line
+    doc.ellipse(centerX, centerY, size * 0.2, size / 2, 'S');
+  }
+
+  private drawGitHubIcon(doc: jsPDF, x: number, y: number, colors: CVColors): void {
+    const size = 3;
+    const centerX = x + size / 2;
+    const centerY = y + size / 2 - 0.2;
+    doc.setDrawColor(...colors.primary);
+    doc.setLineWidth(0.3);
+    // Circle for the octocat head
+    doc.circle(centerX, centerY, size / 2, 'S');
+    // Simple face elements
+    doc.setFillColor(...colors.primary);
+    // Two small eyes
+    doc.circle(centerX - 0.4, centerY - 0.2, 0.2, 'F');
+    doc.circle(centerX + 0.4, centerY - 0.2, 0.2, 'F');
+    // Small smile curve approximated with a line
+    doc.line(centerX - 0.3, centerY + 0.4, centerX + 0.3, centerY + 0.4);
   }
 
   private formatDateShort(date: Date): string {

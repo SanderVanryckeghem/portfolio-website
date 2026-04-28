@@ -15,7 +15,7 @@ export class PortfolioService {
     name: 'Sander Vanryckeghem',
     title: 'Front-end Developer',
     bio: 'I am a front-end developer with a passion for creating intuitive and visually appealing user interfaces. With a strong passion for React, React Native and Mobile development, but thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
-    avatar: 'assets/images/avatar.png',
+    avatar: 'assets/images/avatar_normal.png',
     skills: [
       'React',
       'React Native',
@@ -378,7 +378,7 @@ export class PortfolioService {
   private experiences: Experience[] = [
     {
       id: 8,
-      company: 'Duodecim',
+      company: 'Axxes - Duodecim',
       position: 'Full-stack Developer',
       startDate: new Date('2026-04-01'),
       current: true,
