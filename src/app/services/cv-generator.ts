@@ -500,11 +500,19 @@ export class CVGeneratorService {
 
       // Achievements (if any)
       if (exp.achievements && exp.achievements.length > 0) {
+        const bulletIndent = 6;
+        const achievementMaxWidth = maxWidth - bulletIndent;
         for (const achievement of exp.achievements.slice(0, 3)) {
           doc.setFillColor(...colors.dark);
           doc.circle(x + 3, y - 1, 0.6, 'F');
-          doc.text(achievement, x + 6, y);
+          const achievementLines = doc.splitTextToSize(achievement, achievementMaxWidth);
+          doc.text(achievementLines[0], x + bulletIndent, y);
           y += 4;
+          // Render additional lines without bullet point
+          for (let i = 1; i < achievementLines.length; i++) {
+            doc.text(achievementLines[i], x + bulletIndent, y);
+            y += 4;
+          }
         }
       }
 

@@ -377,6 +377,36 @@ export class PortfolioService {
 
   private experiences: Experience[] = [
     {
+      id: 8,
+      company: 'Duodecim',
+      position: 'Full-stack Developer',
+      startDate: new Date('2026-04-01'),
+      current: true,
+      description:
+        'Sole developer on a multi-tenant platform for managing property inspections (EPC, asbestos, electrical, oil tank) in Belgium. The platform supports organizations and partners in scheduling, executing, and invoicing inspections.',
+      achievements: [
+        'Implementation of Facturalia API integration for automated invoicing, including database migrations, tRPC endpoints, and a dynamic invoice modal with intelligent product sorting based on building and inspection type',
+        'Extension of the data access layer using repository pattern',
+        'UI/UX improvements such as collapsible sections, scrollable dropdowns, and real-time total calculations',
+        'End-to-end type-safe development with TypeScript, Zod validation, and tRPC type inference',
+      ],
+      technologies: [
+        'Next.js',
+        'React',
+        'TypeScript',
+        'AWS Lambda',
+        'PostgreSQL',
+        'TailwindCSS',
+        'Radix UI',
+        'Clerk',
+        'AWS CDK',
+        'tRPC',
+        'AWS S3',
+      ],
+      location: 'Belgium',
+      type: EmploymentType.FULL_TIME,
+    },
+    {
       id: 1,
       company: 'Axxes - Silverfin',
       position: 'BSO Solution Developer UK-Unit',
