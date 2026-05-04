@@ -4,6 +4,7 @@ export interface Technology {
   icon: string;
   category: TechCategory;
   proficiency?: number; // 0-100
+  showInCV?: boolean;
   yearsOfExperience?: number;
   color?: string;
 }

@@ -180,6 +180,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 95,
       color: '#61DAFB',
+      showInCV: true,
     },
     {
       id: 2,
@@ -188,6 +189,7 @@ export class PortfolioService {
       category: TechCategory.MOBILE,
       proficiency: 95,
       color: '#61DAFB',
+      showInCV: true,
     },
     {
       id: 3,
@@ -196,6 +198,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 90,
       color: '#3178C6',
+      showInCV: true,
     },
     {
       id: 4,
@@ -204,6 +207,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 90,
       color: '#F7DF1E',
+      showInCV: true,
     },
     {
       id: 5,
@@ -212,6 +216,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 95,
       color: '#E34F26',
+      showInCV: true,
     },
     {
       id: 6,
@@ -220,6 +225,7 @@ export class PortfolioService {
       category: TechCategory.MOBILE,
       proficiency: 80,
       color: '#FA7343',
+      showInCV: true,
     },
     {
       id: 7,
@@ -236,6 +242,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 75,
       color: '#DD0031',
+      showInCV: true,
     },
     {
       id: 9,
@@ -244,6 +251,7 @@ export class PortfolioService {
       category: TechCategory.FRONTEND,
       proficiency: 85,
       color: '#7AB55C',
+      showInCV: true,
     },
     {
       id: 10,
@@ -252,6 +260,7 @@ export class PortfolioService {
       category: TechCategory.TOOLS,
       proficiency: 90,
       color: '#F05032',
+      showInCV: true,
     },
     {
       id: 11,
@@ -276,6 +285,7 @@ export class PortfolioService {
       category: TechCategory.BACKEND,
       proficiency: 75,
       color: '#336791',
+      showInCV: true,
     },
     {
       id: 14,
@@ -292,6 +302,7 @@ export class PortfolioService {
       category: TechCategory.CLOUD,
       proficiency: 75,
       color: '#FF9900',
+      showInCV: true,
     },
   ];
 

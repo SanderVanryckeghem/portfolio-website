@@ -263,12 +263,9 @@ export class CVGeneratorService {
 
     y = this.addSidebarSectionTitle(doc, 'EXPERTISE', x, y, colors);
 
-    // Sort by proficiency and take top skills
-    const skills = [...technologies]
-      .sort((a, b) => b.proficiency - a.proficiency)
-      .slice(0, 10)
-      .map((t) => t.name);
+    // Sort by skills that are marked to show in CV
 
+    const skills = [...technologies].filter((t) => t.showInCV).map((t) => t.name);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...colors.dark);
