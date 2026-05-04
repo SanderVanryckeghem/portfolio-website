@@ -381,12 +381,13 @@ export class PortfolioService {
       company: 'Axxes - Duodecim',
       position: 'Full-stack Developer',
       startDate: new Date('2026-04-01'),
-      current: true,
+      endDate: new Date('2026-04-30'),
+      current: false,
       description:
         'Sole developer on a multi-tenant platform for managing property inspections (EPC, asbestos, electrical, oil tank) in Belgium. The platform supports organizations and partners in scheduling, executing, and invoicing inspections.',
       achievements: [
         'Implementation of Facturalia API integration for automated invoicing, including database migrations, tRPC endpoints, and a dynamic invoice modal with intelligent product sorting based on building and inspection type',
-        'Extension of the data access layer using repository pattern',
+        'Extension of the data access layer',
         'UI/UX improvements such as collapsible sections, scrollable dropdowns, and real-time total calculations',
         'End-to-end type-safe development with TypeScript, Zod validation, and tRPC type inference',
       ],
