@@ -12,6 +12,6 @@ export enum TechCategory {
   FRONTEND = 'Frontend',
   BACKEND = 'Backend',
   MOBILE = 'Mobile',
-  DESIGN = 'Design',
+  CLOUD = 'Cloud',
   TOOLS = 'Tools',
 }

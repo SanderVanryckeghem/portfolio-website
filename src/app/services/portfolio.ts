@@ -257,7 +257,7 @@ export class PortfolioService {
       id: 11,
       name: 'Figma',
       icon: 'fab fa-figma',
-      category: TechCategory.DESIGN,
+      category: TechCategory.TOOLS,
       proficiency: 85,
       color: '#F24E1E',
     },
@@ -284,6 +284,14 @@ export class PortfolioService {
       category: TechCategory.BACKEND,
       proficiency: 80,
       color: '#FFCA28',
+    },
+    {
+      id: 15,
+      name: 'AWS',
+      icon: 'fab fa-aws',
+      category: TechCategory.CLOUD,
+      proficiency: 75,
+      color: '#FF9900',
     },
   ];
 
