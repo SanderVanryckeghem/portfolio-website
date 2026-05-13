@@ -177,10 +177,11 @@ export class CVGeneratorService {
 
     y += 4;
 
-    // Location
+    // Location with map marker icon
     doc.setFontSize(9);
     doc.setTextColor(...colors.gray);
-    doc.text(developer.location, x, y);
+    this.drawMapMarkerIcon(doc, x, y - 2, colors);
+    doc.text(developer.location, x + 5, y);
     y += 15;
 
     return y;
@@ -717,6 +718,19 @@ export class CVGeneratorService {
     doc.circle(centerX + 0.4, centerY - 0.2, 0.2, 'F');
     // Small smile curve approximated with a line
     doc.line(centerX - 0.3, centerY + 0.4, centerX + 0.3, centerY + 0.4);
+  }
+
+  private drawMapMarkerIcon(doc: jsPDF, x: number, y: number, colors: CVColors): void {
+    const size = 3;
+    const centerX = x + size / 2;
+    doc.setDrawColor(...colors.gray);
+    doc.setFillColor(...colors.gray);
+    doc.setLineWidth(0.3);
+    // Pin head (circle)
+    doc.circle(centerX, y + 0.8, 0.8, 'S');
+    // Pin point (triangle shape using lines)
+    doc.line(centerX - 0.6, y + 1.4, centerX, y + size);
+    doc.line(centerX + 0.6, y + 1.4, centerX, y + size);
   }
 
   private formatDateShort(date: Date): string {
