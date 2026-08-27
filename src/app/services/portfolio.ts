@@ -14,7 +14,7 @@ export class PortfolioService {
   private developer: Developer = {
     name: 'Sander Vanryckeghem',
     title: 'Front-end Developer',
-    bio: 'I am a front-end developer with a passion for creating intuitive and visually appealing user interfaces. With a strong passion for React, React Native and Mobile development, but thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
+    bio: 'I am a software developer with a passion for creating intuitive and visually appealing user interfaces. With a strong passion for React, React Native and Mobile development, but thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
     avatar: 'assets/images/avatar_normal.png',
     skills: [
       'React',
@@ -395,6 +395,26 @@ export class PortfolioService {
   ];
 
   private experiences: Experience[] = [
+    {
+      id: 9,
+      company: 'Axxes - ACEG',
+      position: 'Full-stack Developer',
+      startDate: new Date('2026-05-01'),
+      endDate: new Date('2026-08-01'),
+      current: false,
+      description:
+        "Full-stack development on SPOQ, ACEG's online platform where customers manage their inspections, assets and invoices. Worked across the entire stack from database and API design to the user interface, on a platform serving many customers with strict data separation between them. Modernized key parts of the application by migrating screens from the legacy system to a new architecture, including a complete rework of the invoicing module. Redesigned the customer dashboard, built a partner-upselling feature that recommends relevant services to customers based on their business activity, and extended the multi-customer Control Tower view. Worked in a strongly AI-driven development environment, using AI coding agents (Claude Code) and structured agentic workflows (BMAD method) for planning, implementation and code review. Delivered features from Jira ticket to production, including testing, performance tuning and QA follow-up, in a multilingual (NL/FR/EN) environment.",
+      achievements: [
+        'Reworked the customer dashboard with a personalized partner spotlight and API-driven partner overview',
+        'Built a partner-upselling feature matching customers to services via VAT NACE sector data (KBO), with Odoo CRM lead integration',
+        'Migrated the invoice module from the legacy CMS to a new Laravel API + Vue 3 screen with server-side pagination and tenant-safe queries',
+        'Extended the Control Tower with multi-client views, contact management, and reusable filter components',
+        'AI-assisted development: working with AI coding agents (Claude Code), agentic planning and review workflows (BMAD method), effective prompting and AI code-review practices',
+      ],
+      technologies: ['Git', 'SQL', 'PHP', 'Laravel', 'TypeScript', 'Vue'],
+      location: 'Belgium',
+      type: EmploymentType.FULL_TIME,
+    },
     {
       id: 8,
       company: 'Axxes - Duodecim',
