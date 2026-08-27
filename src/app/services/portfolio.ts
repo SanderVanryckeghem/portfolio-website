@@ -14,7 +14,7 @@ export class PortfolioService {
   private developer: Developer = {
     name: 'Sander Vanryckeghem',
     title: 'Front-end Developer',
-    bio: 'I am a software developer with a passion for creating intuitive and visually appealing user interfaces. With a strong passion for React, React Native and Mobile development, but thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
+    bio: 'I am a software developer with a strong passion for front-end development and creating intuitive, visually appealing user interfaces. Thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
     avatar: 'assets/images/avatar_normal.png',
     skills: [
       'React',
