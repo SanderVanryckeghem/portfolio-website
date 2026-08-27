@@ -39,8 +39,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly navLinks: NavLink[] = [
     { label: 'Home', href: 'home', icon: 'fas fa-home' },
     { label: 'About', href: 'about', icon: 'fas fa-user' },
-    { label: 'Projects', href: 'projects', icon: 'fas fa-briefcase' },
     { label: 'Technologies', href: 'technologies', icon: 'fas fa-code' },
+    { label: 'Projects', href: 'projects', icon: 'fas fa-briefcase' },
     { label: 'Experience', href: 'experience', icon: 'fas fa-graduation-cap' },
     { label: 'Contact', href: 'contact', icon: 'fas fa-envelope' },
   ];
