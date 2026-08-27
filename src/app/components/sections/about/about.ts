@@ -19,9 +19,9 @@ export class AboutComponent implements OnInit, AfterViewInit {
   developer: Developer | null = null;
 
   readonly stats = [
-    { label: 'Years Experience', value: '2+', icon: 'fas fa-calendar-alt' },
-    { label: 'Projects Completed', value: '3+', icon: 'fas fa-check-circle' },
-    { label: 'Happy Clients', value: '3+', icon: 'fas fa-smile' },
+    { label: 'Years Experience', value: '3+', icon: 'fas fa-calendar-alt' },
+    { label: 'Projects Completed', value: '4+', icon: 'fas fa-check-circle' },
+    { label: 'Happy Clients', value: '4+', icon: 'fas fa-smile' },
     { label: 'Code Commits', value: '2000+', icon: 'fas fa-code-branch' },
   ];
 

@@ -400,7 +400,7 @@ export class PortfolioService {
       company: 'Axxes - Duodecim',
       position: 'Full-stack Developer',
       startDate: new Date('2026-04-01'),
-      endDate: new Date('2026-04-30'),
+      endDate: new Date(Date.now()),
       current: false,
       description:
         'Sole developer on a multi-tenant platform for managing property inspections (EPC, asbestos, electrical, oil tank) in Belgium. The platform supports organizations and partners in scheduling, executing, and invoicing inspections.',
