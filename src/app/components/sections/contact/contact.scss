@@ -15,23 +15,11 @@
   margin-bottom: 4rem;
 
   .section-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    position: relative;
     display: inline-block;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 4px;
-      background: var(--gradient);
-      border-radius: 2px;
-    }
+    background: var(--accent);
+    color: var(--tt-black);
+    padding: 0.25rem 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .section-subtitle {
@@ -74,18 +62,15 @@
       width: 100%;
       padding: 1.2rem;
       background: var(--bg-card);
-      border: 2px solid transparent;
-      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-color);
       color: var(--text-primary);
       font-size: 1rem;
+      font-family: var(--font-mono);
       transition: all var(--transition-base);
-      font-family: inherit;
 
       &:focus {
         outline: none;
         border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
 
         ~ label {
           top: -10px;
@@ -136,12 +121,10 @@
 
   .submit-btn {
     padding: 1.2rem 3rem;
-    background: var(--gradient);
-    color: white;
-    border: none;
-    border-radius: 50px;
+    background: var(--accent);
+    color: var(--tt-black);
+    border: 2px solid var(--accent);
     font-size: 1.1rem;
-    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-base);
     display: inline-flex;
@@ -155,8 +138,8 @@
     }
 
     &:hover:not(:disabled) {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+      background: var(--bg-primary);
+      color: var(--accent);
     }
 
     &:disabled {
@@ -167,20 +150,20 @@
 
   .submit-message {
     padding: 1rem;
-    border-radius: var(--radius-md);
     text-align: center;
     margin-top: 1rem;
+    font-family: var(--font-mono);
 
     &.success {
-      background: rgba(76, 175, 80, 0.1);
+      background: transparent;
       color: var(--color-success);
-      border: 1px solid var(--color-success);
+      border: 2px solid var(--color-success);
     }
 
     &.error {
-      background: rgba(255, 68, 68, 0.1);
+      background: transparent;
       color: var(--color-error);
-      border: 1px solid var(--color-error);
+      border: 2px solid var(--color-error);
     }
   }
 }
@@ -203,10 +186,9 @@
   gap: 1.5rem;
   padding: 1.5rem;
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
   transition: all var(--transition-base);
   opacity: 0;
-  transform: translateY(20px);
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -216,19 +198,13 @@
   }
 
   &:hover {
-    transform: translateX(10px);
-    box-shadow: var(--shadow-lg);
-
-    @media (max-width: 480px) {
-      transform: translateY(-5px);
-    }
+    border-color: var(--accent);
 
     .info-icon {
-      transform: scale(1.1) rotate(10deg);
-      background: var(--gradient);
+      background: var(--accent);
 
       i {
-        color: white;
+        color: var(--tt-black);
       }
     }
   }
@@ -237,8 +213,8 @@
     width: 50px;
     height: 50px;
     min-width: 50px;
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -306,18 +282,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-card);
-    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--border-color);
     color: var(--text-primary);
     font-size: 1.3rem;
     transition: all var(--transition-base);
     text-decoration: none;
 
     &:hover {
-      transform: translateY(-5px) rotate(360deg);
-      background: var(--gradient);
-      color: white;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--tt-black);
     }
   }
 }
@@ -325,7 +300,6 @@
 .additional-info {
   padding: 1.5rem;
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
   border-left: 4px solid var(--accent);
 
   @media (max-width: 480px) {

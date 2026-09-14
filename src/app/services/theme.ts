@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-
-export type ColorScheme = 'orange' | 'teal';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -9,9 +7,6 @@ export type ColorScheme = 'orange' | 'teal';
 export class ThemeService {
   private darkMode = new BehaviorSubject<boolean>(true);
   public darkMode$ = this.darkMode.asObservable();
-
-  private colorScheme = new BehaviorSubject<ColorScheme>('orange');
-  public colorScheme$ = this.colorScheme.asObservable();
 
   constructor() {
     // Check for saved theme preference or default to dark mode
@@ -24,14 +19,7 @@ export class ThemeService {
       this.darkMode.next(prefersDark);
     }
 
-    // Check for saved color scheme preference
-    const savedColorScheme = localStorage.getItem('colorScheme') as ColorScheme;
-    if (savedColorScheme && (savedColorScheme === 'orange' || savedColorScheme === 'teal')) {
-      this.colorScheme.next(savedColorScheme);
-    }
-
     this.applyTheme();
-    this.applyColorScheme();
   }
 
   toggleTheme(): void {
@@ -60,42 +48,15 @@ export class ThemeService {
     return this.darkMode.value;
   }
 
-  toggleColorScheme(): void {
-    const newValue: ColorScheme = this.colorScheme.value === 'orange' ? 'teal' : 'orange';
-    this.colorScheme.next(newValue);
-    localStorage.setItem('colorScheme', newValue);
-    this.applyColorScheme();
-  }
-
-  getColorScheme(): ColorScheme {
-    return this.colorScheme.value;
-  }
-
-  private applyColorScheme(): void {
-    if (this.colorScheme.value === 'teal') {
-      document.documentElement.setAttribute('data-color', 'teal');
-    } else {
-      document.documentElement.removeAttribute('data-color');
-    }
-    this.updateFavicon();
-  }
-
   private updateFavicon(): void {
-    const colors =
-      this.colorScheme.value === 'teal'
-        ? { start: '#14b8a6', end: '#06b6d4' }
-        : { start: '#f97316', end: '#ef4444' };
+    const accent = this.darkMode.value ? '#ffff00' : '#cc0000';
+    const bg = this.darkMode.value ? '#000000' : '#ffffff';
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${colors.start}"/>
-            <stop offset="100%" style="stop-color:${colors.end}"/>
-          </linearGradient>
-        </defs>
-        <rect width="32" height="32" rx="6" fill="${this.darkMode.value ? '#0a0a0a' : '#ffffff'}"/>
-        <text x="16" y="22" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" fill="url(#grad)" text-anchor="middle">SV</text>
+        <rect width="32" height="32" fill="${bg}"/>
+        <rect x="1" y="1" width="30" height="30" fill="none" stroke="${accent}" stroke-width="2"/>
+        <text x="16" y="23" font-family="'VT323', 'Courier New', monospace" font-size="18" fill="${accent}" text-anchor="middle">SV</text>
       </svg>
     `;
 

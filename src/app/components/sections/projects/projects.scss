@@ -12,23 +12,11 @@
 }
 
 .section-title {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  position: relative;
   display: inline-block;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: var(--gradient);
-    border-radius: 2px;
-  }
+  background: var(--accent);
+  color: var(--tt-black);
+  padding: 0.25rem 1rem;
+  margin-bottom: 1rem;
 }
 
 .section-description {
@@ -65,24 +53,22 @@
     padding: 0.75rem 1.5rem;
     background: transparent;
     border: 2px solid var(--border-color);
-    border-radius: 50px;
     color: var(--text-primary);
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
     white-space: nowrap;
     flex-shrink: 0;
 
     &:hover {
       border-color: var(--accent);
       color: var(--accent);
-      transform: translateY(-2px);
     }
 
     &.active {
-      background: var(--gradient);
-      border-color: transparent;
-      color: white;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--tt-black);
     }
   }
 }

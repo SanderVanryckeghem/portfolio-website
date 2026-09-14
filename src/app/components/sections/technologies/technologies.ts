@@ -1,7 +1,20 @@
 import { Component, OnInit, AfterViewInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PortfolioService } from '../../../services/portfolio';
+import { AnimationService } from '../../../services/animation';
 import { Technology, TechCategory } from '../../../models/technology.model';
 import { gsap } from 'gsap';
+
+// Pure white/black are deliberately excluded - they'd vanish against the
+// theme's own black (on-air) or white (printout) card background. Each
+// colour is paired with a text colour that stays readable against it.
+const TELETEXT_PALETTE: { color: string; text: string }[] = [
+  { color: '#ff0000', text: '#ffffff' }, // red
+  { color: '#00ff00', text: '#000000' }, // green
+  { color: '#ffff00', text: '#000000' }, // yellow
+  { color: '#3b82f6', text: '#ffffff' }, // blue (brightened - pure #0000ff is unreadable on black)
+  { color: '#ff00ff', text: '#000000' }, // magenta
+  { color: '#00ffff', text: '#000000' }, // cyan
+];
 
 @Component({
   selector: 'app-technologies',
@@ -13,6 +26,7 @@ import { gsap } from 'gsap';
 })
 export class TechnologiesComponent implements OnInit, AfterViewInit {
   private readonly portfolioService = inject(PortfolioService);
+  private readonly animationService = inject(AnimationService);
 
   technologies: Technology[] = [];
   readonly categories = Object.values(TechCategory);
@@ -27,7 +41,10 @@ export class TechnologiesComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.animateItems(), 100);
+    // Initial reveal waits for the section to actually enter the viewport.
+    setTimeout(() => {
+      this.animationService.animateStagger('.tech-card', { opacity: 1, duration: 0.2 }, 0.02);
+    }, 100);
   }
 
   filterByCategory(category: TechCategory | 'All'): void {
@@ -48,16 +65,22 @@ export class TechnologiesComponent implements OnInit, AfterViewInit {
   private animateItems(): void {
     const cards = document.querySelectorAll('.tech-card');
 
-    gsap.set(cards, { opacity: 0, scale: 0.8, rotation: -5 });
+    gsap.set(cards, { opacity: 0 });
 
     gsap.to(cards, {
       opacity: 1,
-      scale: 1,
-      rotation: 0,
-      duration: 0.4,
-      stagger: 0.04,
-      ease: 'back.out(1.4)',
+      duration: 0.2,
+      stagger: 0.02,
+      ease: 'none',
     });
+  }
+
+  getTechColor(index: number): string {
+    return TELETEXT_PALETTE[index % TELETEXT_PALETTE.length].color;
+  }
+
+  getTechText(index: number): string {
+    return TELETEXT_PALETTE[index % TELETEXT_PALETTE.length].text;
   }
 
   getTechGroups(): Map<TechCategory, Technology[]> {

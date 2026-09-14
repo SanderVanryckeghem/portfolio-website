@@ -39,7 +39,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.animationService.animateHero();
-    this.animationService.mouseFollow('.hero-content', 0.5);
     this.initRollingText();
   }
 

@@ -4,6 +4,7 @@
       <div class="nav-wrapper">
         <!-- Logo -->
         <div class="nav-logo" (click)="navigateToSection('home')">
+          <span class="logo-page">P100</span>
           <span class="logo-text gradient-text">SV</span>
         </div>
 
@@ -12,7 +13,7 @@
           @for (link of navLinks; track link.href) {
           <li>
             <a [class.active]="activeSection === link.href" (click)="navigateToSection(link.href)" class="nav-link">
-              {{link.label}}
+              <span class="nav-page">{{link.page}}</span>{{link.label}}
             </a>
           </li>
           }
@@ -20,15 +21,13 @@
 
         <!-- Theme Toggle, Color Toggle & Mobile Menu -->
         <div class="nav-actions">
-          <button class="color-toggle" (click)="toggleColorScheme()"
-            [title]="(colorScheme$ | async) === 'orange' ? 'Switch to Teal' : 'Switch to Orange'">
-            <span class="color-indicator" [ngClass]="(colorScheme$ | async) === 'orange' ? 'orange' : 'teal'"></span>
-          </button>
-
-          <button class="theme-toggle" (click)="toggleTheme()"
-            [title]="(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'">
-            <i [ngClass]="(isDarkMode$ | async) ? 'fas fa-bolt' : 'fas fa-moon'"></i>
-          </button>
+          <div class="remote">
+            <span class="remote-label">SRC</span>
+            <button class="remote-btn src-btn" (click)="toggleTheme()"
+              [title]="(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'">
+              SRC
+            </button>
+          </div>
 
           <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
             <span></span>

@@ -14,23 +14,11 @@
 }
 
 .section-title {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  position: relative;
   display: inline-block;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: var(--gradient);
-    border-radius: 2px;
-  }
+  background: var(--accent);
+  color: var(--tt-black);
+  padding: 0.25rem 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .section-subtitle {
@@ -64,8 +52,6 @@
     width: 350px;
     height: 350px;
     object-fit: cover;
-    border-radius: 20px;
-    box-shadow: var(--shadow-xl);
     display: block;
     border: 3px solid var(--accent);
 
@@ -134,35 +120,27 @@
 
 .stat-card {
   background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   padding: 2rem;
-  border-radius: var(--radius-lg);
   text-align: center;
   opacity: 0;
-  transform: translateY(30px);
   transition: all var(--transition-base);
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-xl);
-
-    i {
-      transform: scale(1.2);
-    }
+    border-color: var(--accent);
   }
 
   i {
     font-size: 2.5rem;
     color: var(--accent);
     margin-bottom: 1rem;
-    transition: transform var(--transition-base);
   }
 
   h3 {
-    font-size: 2rem;
+    font-family: var(--font-display);
+    font-size: 2.4rem;
     margin-bottom: 0.5rem;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent);
   }
 
   p {
@@ -172,24 +150,23 @@
 }
 
 .btn {
-  padding: 1rem 2rem;
+  padding: 1rem 1.5rem;
   font-size: 1rem;
-  border-radius: 50px;
   border: none;
   cursor: pointer;
   transition: all var(--transition-base);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
 
   &.btn-primary {
-    background: var(--gradient);
-    color: white;
+    background: var(--accent);
+    color: var(--tt-black);
+    border: 2px solid var(--accent);
 
     &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      background: var(--bg-primary);
+      color: var(--accent);
     }
   }
 }

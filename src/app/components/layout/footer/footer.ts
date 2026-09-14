@@ -13,7 +13,7 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
       <div class="container">
         <div class="footer-content">
           <div class="footer-section">
-            <h3 class="footer-title gradient-text">Portfolio</h3>
+            <h3 class="footer-title gradient-text">P100 PORTFOLIO</h3>
             <p class="footer-description">
               Passionate web developer creating amazing digital experiences.
             </p>
@@ -22,10 +22,10 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
           <div class="footer-section">
             <h4>Quick Links</h4>
             <ul class="footer-links">
-              <li><a href="#home">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#projects">Projects</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li><a href="#home">100 Home</a></li>
+              <li><a href="#about">200 About</a></li>
+              <li><a href="#projects">400 Projects</a></li>
+              <li><a href="#contact">600 Contact</a></li>
             </ul>
           </div>
 
@@ -50,8 +50,15 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
           </div>
         </div>
 
+        <div class="fastext-bar">
+          <a href="#home" class="fastext-key red">Home</a>
+          <a href="#projects" class="fastext-key green">Projects</a>
+          <a href="#technologies" class="fastext-key yellow">Skills</a>
+          <a href="#contact" class="fastext-key cyan">Contact</a>
+        </div>
+
         <div class="footer-bottom">
-          <p>&copy; {{ currentYear }} Portfolio. All rights reserved.</p>
+          <p>P100 1/1 &middot; &copy; {{ currentYear }} Portfolio &middot; All rights reserved</p>
           <p>Made with <span class="heart">❤</span> using Angular</p>
         </div>
       </div>
@@ -61,9 +68,9 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
     `
       .footer {
         background: var(--bg-primary);
-        padding: 3rem 0 1rem;
+        padding: 3rem 0 0;
         margin-top: 5rem;
-        border-top: 1px solid var(--border-color);
+        border-top: 2px solid var(--accent);
       }
 
       .footer-content {
@@ -79,8 +86,9 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
       }
 
       .footer-title {
-        font-size: 1.5rem;
-        font-weight: 800;
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        letter-spacing: 1px;
         margin-bottom: 0.5rem;
       }
 
@@ -91,8 +99,10 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
 
       .footer-section {
         h4 {
+          font-family: var(--font-display);
+          letter-spacing: 1px;
           margin-bottom: 1rem;
-          color: var(--text-primary);
+          color: var(--accent);
         }
       }
 
@@ -115,29 +125,48 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
         }
       }
 
-      .footer-bottom {
-        text-align: center;
-        padding-top: 2rem;
-        border-top: 1px solid var(--border-color);
-        color: var(--text-secondary);
+      .fastext-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 2rem;
 
-        p {
-          margin: 0.5rem 0;
-        }
-
-        .heart {
-          color: #ff4444;
-          animation: heartbeat 1.5s ease-in-out infinite;
+        @media (max-width: 480px) {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
 
-      @keyframes heartbeat {
-        0%,
-        100% {
-          transform: scale(1);
+      .fastext-key {
+        display: block;
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+        font-family: var(--font-display);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--tt-black);
+
+        &.red { background: var(--tt-red); }
+        &.green { background: var(--tt-green); }
+        &.yellow { background: var(--tt-yellow); }
+        &.cyan { background: var(--tt-cyan); }
+
+        &:hover {
+          filter: invert(1);
         }
-        50% {
-          transform: scale(1.1);
+      }
+
+      .footer-bottom {
+        text-align: center;
+        padding: 1.5rem 0;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+
+        p {
+          margin: 0.35rem 0;
+        }
+
+        .heart {
+          color: var(--tt-red);
         }
       }
     `,

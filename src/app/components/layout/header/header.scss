@@ -10,9 +10,8 @@
 
   &.scrolled {
     .navbar {
-      background: rgba(var(--bg-primary-rgb), 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow-lg);
+      background: var(--bg-primary);
+      border-bottom: 2px solid var(--accent);
       padding: 1rem 0;
     }
   }
@@ -22,6 +21,7 @@
   background: transparent;
   padding: 1.5rem 0;
   transition: all var(--transition-base);
+  font-family: var(--font-display);
 }
 
 .nav-wrapper {
@@ -34,11 +34,20 @@
 
 .nav-logo {
   cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+
+  .logo-page {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
 
   .logo-text {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    letter-spacing: 1px;
   }
 }
 
@@ -70,32 +79,29 @@
 .nav-link {
   color: var(--text-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   position: relative;
-  transition: color var(--transition-base);
+  transition: color var(--transition-base), background var(--transition-base);
   cursor: pointer;
   display: inline-block;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.4rem;
   white-space: nowrap;
   min-width: fit-content;
 
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent);
-    transition: width var(--transition-base);
+  .nav-page {
+    color: var(--text-secondary);
+    margin-right: 0.5rem;
   }
 
   &:hover,
   &.active {
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--tt-black);
 
-    &::after {
-      width: 100%;
+    .nav-page {
+      color: var(--tt-black);
     }
   }
 }
@@ -106,56 +112,46 @@
   gap: 1rem;
 }
 
-.color-toggle {
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--border-color);
-  background: transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all var(--transition-base);
+.remote {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-
-  &:hover {
-    border-color: var(--accent);
-    transform: scale(1.1);
-  }
-
-  .color-indicator {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    transition: background var(--transition-base);
-
-    &.orange {
-      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
-    }
-
-    &.teal {
-      background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
-    }
-  }
+  gap: 0.25rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
 }
 
-.theme-toggle {
-  width: 40px;
-  height: 40px;
+.remote-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+
+.remote-btn {
+  min-width: 52px;
+  padding: 0.3rem 0.6rem;
   border: 2px solid var(--border-color);
-  background: transparent;
-  border-radius: 50%;
+  background: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
   transition: all var(--transition-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   &:hover {
     border-color: var(--accent);
-    color: var(--accent);
-    transform: rotate(180deg);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &.src-btn:hover {
+    background: var(--accent);
+    color: var(--tt-black);
   }
 }
 
@@ -207,7 +203,7 @@
   opacity: 0;
   visibility: hidden;
   transition: transform var(--transition-base), opacity var(--transition-base), visibility var(--transition-base);
-  box-shadow: var(--shadow-xl);
+  border-bottom: 2px solid var(--accent);
   z-index: 999;
 
   &.open {
@@ -230,20 +226,17 @@
   padding: 1rem 2rem;
   color: var(--text-primary);
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   transition: all var(--transition-base);
 
   &:hover,
   &.active {
-    background: var(--bg-secondary);
-    color: var(--accent);
-
-    i {
-      transform: scale(1.2);
-    }
+    background: var(--accent);
+    color: var(--tt-black);
   }
 
   i {
     width: 20px;
-    transition: transform var(--transition-base);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HeaderComponent } from './components/layout/header/header';
 import { FooterComponent } from './components/layout/footer/footer';
 import { HeroComponent } from './components/sections/hero/hero';
@@ -8,7 +8,6 @@ import { TechnologiesComponent } from './components/sections/technologies/techno
 import { ExperienceComponent } from './components/sections/experience/experience';
 import { ContactComponent } from './components/sections/contact/contact';
 import { ThemeService } from './services/theme';
-import { AnimationService } from './services/animation';
 
 @Component({
   selector: 'app-root',
@@ -26,17 +25,11 @@ import { AnimationService } from './services/animation';
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit {
   private readonly themeService = inject(ThemeService);
-  private readonly animationService = inject(AnimationService);
 
   ngOnInit(): void {
     // Initialize theme
     this.themeService.darkMode$.subscribe();
-  }
-
-  ngAfterViewInit(): void {
-    // Initialize global animations
-    this.animationService.magneticButton('.btn');
   }
 }

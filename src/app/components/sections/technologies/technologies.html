@@ -17,8 +17,8 @@
     </div>
 
     <div class="tech-grid">
-      @for (tech of filteredTechnologies; track tech.name) {
-      <div class="tech-card" [style.--tech-color]="tech.color">
+      @for (tech of filteredTechnologies; track tech.name; let i = $index) {
+      <div class="tech-card" [style.--tech-color]="getTechColor(i)" [style.--tech-text]="getTechText(i)">
         <div class="tech-icon">
           <i [class]="tech.icon"></i>
         </div>

@@ -1,30 +1,27 @@
 import {
   Component,
   OnInit,
-  OnDestroy,
   AfterViewInit,
+  OnDestroy,
   ElementRef,
   ViewChild,
   ChangeDetectionStrategy,
   inject,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ThemeService, ColorScheme } from '../../../services/theme';
+import { ThemeService } from '../../../services/theme';
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-  opacity: number;
-}
+const GLYPHS = '█▓▒░#%&*+=-.:· 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const CELL_SIZE = 20;
+const TUNE_IN_DURATION_MS = 1100;
 
-interface ColorRGB {
-  r: number;
-  g: number;
-  b: number;
-}
+// Print mode (light) keeps the original, subtle effect. TV mode (dark) is
+// boosted - on a white "page" a loud background fights the text, but on the
+// black on-air screen it reads as intended interference.
+const EFFECT = {
+  light: { loudAlphaMin: 0.15, loudAlphaSpan: 0.35, flickerRate: 0.015, accentChance: 0, flickerAlphaMin: 0.04, flickerAlphaSpan: 0.06, accentAlphaMin: 0, accentAlphaSpan: 0, baseAlpha: 0.03 },
+  dark: { loudAlphaMin: 0.3, loudAlphaSpan: 0.45, flickerRate: 0.05, accentChance: 0.4, flickerAlphaMin: 0.12, flickerAlphaSpan: 0.15, accentAlphaMin: 0.15, accentAlphaSpan: 0.2, baseAlpha: 0.08 },
+};
 
 @Component({
   selector: 'app-particle-background',
@@ -41,7 +38,6 @@ interface ColorRGB {
         width: 100%;
         height: 100%;
         pointer-events: none;
-        opacity: 0.7;
         z-index: 1;
       }
     `,
@@ -52,34 +48,29 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
 
   private readonly themeService = inject(ThemeService);
   private ctx!: CanvasRenderingContext2D;
-  private particles: Particle[] = [];
   private animationId!: number;
-  private mouseX = 0;
-  private mouseY = 0;
-  private colorSubscription!: Subscription;
-  private currentColor: ColorRGB = { r: 249, g: 115, b: 22 }; // Default orange
+  private darkModeSubscription!: Subscription;
+  private isDark = true;
+  private cols = 0;
+  private rows = 0;
+  private grid: string[] = [];
+  private startTime = 0;
+  private lastDrawTime = 0;
 
-  private readonly colorSchemes: Record<ColorScheme, ColorRGB> = {
-    orange: { r: 249, g: 115, b: 22 },
-    teal: { r: 20, g: 184, b: 166 },
-  };
-
-  private boundHandleMouseMove = this.handleMouseMove.bind(this);
   private boundHandleResize = this.handleResize.bind(this);
 
   ngOnInit(): void {
-    window.addEventListener('mousemove', this.boundHandleMouseMove);
     window.addEventListener('resize', this.boundHandleResize);
 
-    // Subscribe to color scheme changes
-    this.colorSubscription = this.themeService.colorScheme$.subscribe((scheme) => {
-      this.currentColor = this.colorSchemes[scheme];
+    this.darkModeSubscription = this.themeService.darkMode$.subscribe((isDark) => {
+      this.isDark = isDark;
     });
   }
 
   ngAfterViewInit(): void {
     this.initCanvas();
-    this.createParticles();
+    this.buildGrid();
+    this.startTime = performance.now();
     this.animate();
   }
 
@@ -87,10 +78,7 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
-    if (this.colorSubscription) {
-      this.colorSubscription.unsubscribe();
-    }
-    window.removeEventListener('mousemove', this.boundHandleMouseMove);
+    this.darkModeSubscription?.unsubscribe();
     window.removeEventListener('resize', this.boundHandleResize);
   }
 
@@ -106,98 +94,77 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     canvas.height = window.innerHeight;
   }
 
-  private createParticles(): void {
-    const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 10000);
-
-    for (let i = 0; i < particleCount; i++) {
-      this.particles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2.5 + 1.5,
-        opacity: Math.random() * 0.4 + 0.3,
-      });
-    }
+  private buildGrid(): void {
+    this.cols = Math.ceil(window.innerWidth / CELL_SIZE);
+    this.rows = Math.ceil(window.innerHeight / CELL_SIZE);
+    this.grid = Array.from({ length: this.cols * this.rows }, () => this.randomGlyph());
   }
 
+  private randomGlyph(): string {
+    return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+  }
+
+  // "Signal tuning" reveal: dense noise settling into a calm, sparsely flickering grid
   private animate(): void {
+    const now = performance.now();
+    const elapsed = now - this.startTime;
+    const tuneProgress = Math.min(elapsed / TUNE_IN_DURATION_MS, 1);
+
+    // Redraw at ~20fps during the tuning phase, ~10fps once settled - this is a
+    // full-grid glyph re-render, not worth doing at 60fps for a background effect.
+    const frameInterval = tuneProgress < 1 ? 50 : 100;
+    if (now - this.lastDrawTime < frameInterval) {
+      this.animationId = requestAnimationFrame(() => this.animate());
+      return;
+    }
+    this.lastDrawTime = now;
+
+    const noiseDensity = 1 - tuneProgress; // fraction of cells drawn as loud static
+
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    this.ctx.font = `${CELL_SIZE}px 'VT323', 'Courier New', monospace`;
+    this.ctx.textBaseline = 'top';
 
-    // Update and draw particles
-    this.particles.forEach((particle) => {
-      // Mouse interaction
-      const dx = this.mouseX - particle.x;
-      const dy = this.mouseY - particle.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+    const dim = this.isDark ? '255, 255, 255' : '0, 0, 0';
+    const accentRgb = this.hexToRgb(this.isDark ? '#ffff00' : '#cc0000');
+    const fx = this.isDark ? EFFECT.dark : EFFECT.light;
 
-      if (distance < 100) {
-        const force = (100 - distance) / 100;
-        particle.vx -= (dx / distance) * force * 0.5;
-        particle.vy -= (dy / distance) * force * 0.5;
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const index = row * this.cols + col;
+        const isLoud = Math.random() < noiseDensity;
+
+        if (isLoud) {
+          this.grid[index] = this.randomGlyph();
+          const alpha = fx.loudAlphaMin + Math.random() * fx.loudAlphaSpan;
+          this.ctx.fillStyle = `rgba(${accentRgb}, ${alpha})`;
+        } else if (Math.random() < fx.flickerRate) {
+          this.grid[index] = this.randomGlyph();
+          if (Math.random() < fx.accentChance) {
+            this.ctx.fillStyle = `rgba(${accentRgb}, ${fx.accentAlphaMin + Math.random() * fx.accentAlphaSpan})`;
+          } else {
+            this.ctx.fillStyle = `rgba(${dim}, ${fx.flickerAlphaMin + Math.random() * fx.flickerAlphaSpan})`;
+          }
+        } else {
+          this.ctx.fillStyle = `rgba(${dim}, ${fx.baseAlpha})`;
+        }
+
+        this.ctx.fillText(this.grid[index], col * CELL_SIZE, row * CELL_SIZE);
       }
-
-      // Update position
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-
-      // Damping
-      particle.vx *= 0.99;
-      particle.vy *= 0.99;
-
-      // Bounce off walls
-      if (particle.x < 0 || particle.x > window.innerWidth) {
-        particle.vx *= -1;
-      }
-      if (particle.y < 0 || particle.y > window.innerHeight) {
-        particle.vy *= -1;
-      }
-
-      // Keep particles in bounds
-      particle.x = Math.max(0, Math.min(window.innerWidth, particle.x));
-      particle.y = Math.max(0, Math.min(window.innerHeight, particle.y));
-
-      // Draw particle
-      this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b}, ${particle.opacity})`;
-      this.ctx.fill();
-    });
-
-    // Draw connections
-    this.drawConnections();
+    }
 
     this.animationId = requestAnimationFrame(() => this.animate());
   }
 
-  private drawConnections(): void {
-    for (let i = 0; i < this.particles.length; i++) {
-      for (let j = i + 1; j < this.particles.length; j++) {
-        const dx = this.particles[i].x - this.particles[j].x;
-        const dy = this.particles[i].y - this.particles[j].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 140) {
-          const opacity = ((140 - distance) / 140) * 0.4;
-          this.ctx.beginPath();
-          this.ctx.strokeStyle = `rgba(${this.currentColor.r}, ${this.currentColor.g}, ${this.currentColor.b}, ${opacity})`;
-          this.ctx.lineWidth = 1.2;
-          this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
-          this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
-          this.ctx.stroke();
-        }
-      }
-    }
-  }
-
-  private handleMouseMove(event: MouseEvent): void {
-    this.mouseX = event.clientX;
-    this.mouseY = event.clientY;
+  private hexToRgb(hex: string): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
   }
 
   private handleResize(): void {
     this.setCanvasSize();
-    this.particles = [];
-    this.createParticles();
+    this.buildGrid();
   }
 }

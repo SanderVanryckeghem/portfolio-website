@@ -6,21 +6,22 @@ import {
   inject,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-import { ThemeService, ColorScheme } from '../../../services/theme';
+import { ThemeService } from '../../../services/theme';
 import { AnimationService } from '../../../services/animation';
 
 interface NavLink {
   label: string;
   href: string;
   icon: string;
+  page: string;
 }
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [AsyncPipe, NgClass],
+  imports: [AsyncPipe],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,24 +31,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly animationService = inject(AnimationService);
 
   isDarkMode$: Observable<boolean>;
-  colorScheme$: Observable<ColorScheme>;
   isScrolled = false;
   isMobileMenuOpen = false;
   activeSection = 'home';
   private sectionObserver: IntersectionObserver | null = null;
 
   readonly navLinks: NavLink[] = [
-    { label: 'Home', href: 'home', icon: 'fas fa-home' },
-    { label: 'About', href: 'about', icon: 'fas fa-user' },
-    { label: 'Technologies', href: 'technologies', icon: 'fas fa-code' },
-    { label: 'Projects', href: 'projects', icon: 'fas fa-briefcase' },
-    { label: 'Experience', href: 'experience', icon: 'fas fa-graduation-cap' },
-    { label: 'Contact', href: 'contact', icon: 'fas fa-envelope' },
+    { label: 'Home', href: 'home', icon: 'fas fa-home', page: '100' },
+    { label: 'About', href: 'about', icon: 'fas fa-user', page: '200' },
+    { label: 'Technologies', href: 'technologies', icon: 'fas fa-code', page: '300' },
+    { label: 'Projects', href: 'projects', icon: 'fas fa-briefcase', page: '400' },
+    { label: 'Experience', href: 'experience', icon: 'fas fa-graduation-cap', page: '500' },
+    { label: 'Contact', href: 'contact', icon: 'fas fa-envelope', page: '600' },
   ];
 
   constructor() {
     this.isDarkMode$ = this.themeService.darkMode$;
-    this.colorScheme$ = this.themeService.colorScheme$;
   }
 
   ngOnInit(): void {
@@ -67,10 +66,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
-  }
-
-  toggleColorScheme(): void {
-    this.themeService.toggleColorScheme();
   }
 
   toggleMobileMenu(): void {

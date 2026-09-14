@@ -38,8 +38,8 @@ import { SocialLinks } from '../../../models/developer.model';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg-secondary);
-        border-radius: 50%;
+        background: transparent;
+        border: 2px solid var(--border-color);
         color: var(--text-secondary);
         font-size: 1.2rem;
         transition: all var(--transition-base);
@@ -47,8 +47,8 @@ import { SocialLinks } from '../../../models/developer.model';
 
         &:hover {
           background: var(--accent);
-          color: white;
-          transform: translateY(-5px);
+          border-color: var(--accent);
+          color: var(--tt-black);
         }
       }
 
@@ -56,10 +56,6 @@ import { SocialLinks } from '../../../models/developer.model';
         width: 40px;
         height: 40px;
         font-size: 1rem;
-
-        &:hover {
-          transform: translateY(-3px);
-        }
       }
     `,
   ],

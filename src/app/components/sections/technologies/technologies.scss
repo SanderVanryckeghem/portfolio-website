@@ -11,23 +11,11 @@
   margin-bottom: 3rem;
 
   .section-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    position: relative;
     display: inline-block;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 4px;
-      background: var(--gradient);
-      border-radius: 2px;
-    }
+    background: var(--accent);
+    color: var(--tt-black);
+    padding: 0.25rem 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .section-subtitle {
@@ -64,7 +52,6 @@
     padding: 0.75rem 1.5rem;
     background: transparent;
     border: 2px solid var(--border-color);
-    border-radius: 50px;
     color: var(--text-primary);
     font-size: 1rem;
     cursor: pointer;
@@ -75,13 +62,12 @@
     &:hover {
       border-color: var(--accent);
       color: var(--accent);
-      transform: translateY(-2px);
     }
 
     &.active {
-      background: var(--gradient);
-      border-color: transparent;
-      color: white;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--tt-black);
     }
   }
 }
@@ -98,56 +84,20 @@
 }
 .tech-card {
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  border: 2px solid var(--tech-color, var(--border-color));
   padding: 2rem 1.5rem;
   text-align: center;
   transition: all var(--transition-base);
   opacity: 0;
-  transform: scale(0.8) rotate(-5deg);
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--tech-color, var(--accent));
-    transform: scaleX(0);
-    transition: transform var(--transition-base);
-  }
-
   &:hover {
-    transform: translateY(-10px) scale(1.05) rotate(0);
-    box-shadow: var(--shadow-xl);
+    background: var(--tech-color, var(--accent));
 
-    &::before {
-      transform: scaleX(1);
-    }
-
-    .tech-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem;
-      background: var(--bg-card);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-base);
-
-      &:hover {
-        transform: translateX(5px);
-        box-shadow: var(--shadow-md);
-      }
-
-      i {
-        font-size: 1.5rem;
-      }
-
-      span {
-        color: var(--text-primary);
-      }
+    .tech-icon,
+    .tech-name {
+      color: var(--tech-text, var(--tt-black));
     }
   }
 }
@@ -158,9 +108,9 @@
 
 .tech-icon {
   font-size: 3rem;
-  color: var(--tech-color, var(--text-secondary));
+  color: var(--text-primary);
   margin-bottom: 1rem;
-  transition: all 0.6s ease;
+  transition: all var(--transition-base);
   display: inline-block;
 }
 

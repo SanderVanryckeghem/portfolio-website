@@ -18,38 +18,42 @@ export class AnimationService {
 
     tl.fromTo(
       '.hero-title',
-      { opacity: 0, y: 50 },
-      { opacity: 1, y: 0, duration: 1, ease: 'power3.out' },
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, ease: 'none' },
     )
       .fromTo(
         '.hero-subtitle',
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.5',
+        { opacity: 0 },
+        { opacity: 1, duration: 0.2, ease: 'none' },
+        '-=0.1',
       )
       .fromTo(
         '.hero-buttons',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.3',
+        { opacity: 0 },
+        { opacity: 1, duration: 0.2, ease: 'none' },
+        '-=0.05',
       );
   }
 
-  // Scroll animations
+  // Scroll animations - IntersectionObserver rather than ScrollTrigger's
+  // precomputed pixel offsets, so late layout shifts (async webfonts, images)
+  // can't leave a trigger's start position stale and firing early/immediately.
   animateOnScroll(element: string, animation: gsap.TweenVars): void {
-    gsap.fromTo(
-      element,
-      { opacity: 0, y: 50 },
-      {
-        ...animation,
-        scrollTrigger: {
-          trigger: element,
-          start: 'top 80%',
-          end: 'bottom 20%',
-          toggleActions: 'play none none reverse',
-        },
+    const el = document.querySelector(element);
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            gsap.to(el, { opacity: 1, duration: 0.3, ease: 'none', ...animation });
+            obs.unobserve(el);
+          }
+        });
       },
+      { threshold: 0, rootMargin: '0px 0px -20% 0px' },
     );
+    observer.observe(el);
   }
 
   // Stagger animations - each element animates when it enters viewport
@@ -58,51 +62,49 @@ export class AnimationService {
 
     els.forEach((el, index) => {
       const fromVars = animation['from'] as gsap.TweenVars | undefined;
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 30, ...fromVars },
-        {
-          opacity: 1,
-          y: 0,
-          ...animation,
-          delay: index * stagger,
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
+      if (fromVars) {
+        gsap.set(el, fromVars);
+      }
+
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              gsap.to(el, {
+                opacity: 1,
+                ease: 'none',
+                ...animation,
+                delay: index * stagger,
+              });
+              obs.unobserve(el);
+            }
+          });
         },
+        { threshold: 0, rootMargin: '0px 0px -15% 0px' },
       );
+      observer.observe(el);
     });
   }
 
-  // Timeline animation - animates items from left/right when entering viewport
+  // Timeline animation - animates items in as they enter the viewport
   animateTimeline(itemSelector: string): void {
     const items = document.querySelectorAll(itemSelector);
 
     items.forEach((item) => {
-      const isLeft = item.classList.contains('left');
+      gsap.set(item, { opacity: 0 });
 
-      // Set initial state immediately
-      gsap.set(item, {
-        opacity: 0,
-        x: isLeft ? -50 : 50,
-      });
-
-      // Create scroll-triggered animation
-      ScrollTrigger.create({
-        trigger: item,
-        start: 'top 95%', // Trigger earlier when element is 95% from top
-        once: true,
-        onEnter: () => {
-          gsap.to(item, {
-            opacity: 1,
-            x: 0,
-            duration: 0.8,
-            ease: 'power3.out',
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              gsap.to(item, { opacity: 1, duration: 0.3, ease: 'none' });
+              obs.unobserve(item);
+            }
           });
         },
-      });
+        { threshold: 0, rootMargin: '0px 0px -5% 0px' },
+      );
+      observer.observe(item);
     });
   }
 
@@ -167,7 +169,7 @@ export class AnimationService {
 
   // Confetti animation
   createConfetti(): void {
-    const colors = ['#667eea', '#764ba2', '#00d4ff', '#ff006e'];
+    const colors = ['#ff0000', '#00ff00', '#ffff00', '#00ffff', '#ff00ff', '#ffffff'];
     const confettiCount = 100;
 
     for (let i = 0; i < confettiCount; i++) {
