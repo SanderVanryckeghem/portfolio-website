@@ -8,8 +8,9 @@
   --tt-blue: #0000ff;
   --tt-cyan: #00ffff;
   --tt-magenta: #ff00ff;
+  --tt-blue-bright: #3b82f6; // brightened - pure #0000ff is unreadable as text on black
 
-  // Dark theme (default) - "on-air" teletext: black screen
+  // On-air teletext: black screen, the only mode this site has
   --bg-primary: #000000;
   --bg-primary-rgb: 0, 0, 0;
   --bg-secondary: #0a0a0a;
@@ -18,11 +19,23 @@
   --text-secondary: #b3b3b3;
   --border-color: #ffffff;
 
-  // Accent - yellow on-air, red on paper (see [data-theme="light"] below)
   --accent: var(--tt-yellow);
   --accent-hover: #e5e500;
   --accent-secondary: var(--tt-red);
-  --gradient: var(--accent);
+
+  // Rainbow mix used as a colour-bar border wherever a chrome edge needs one
+  --tt-bars: linear-gradient(
+    90deg,
+    var(--tt-red),
+    var(--tt-yellow),
+    var(--tt-green),
+    var(--tt-cyan),
+    var(--tt-blue-bright),
+    var(--tt-magenta)
+  );
+
+  // Headline/name text ("gradient-text") uses the same rainbow mix as the borders
+  --gradient: var(--tt-bars);
 
   // Status colors
   --color-error: var(--tt-red);
@@ -58,19 +71,4 @@
   --shadow-md: none;
   --shadow-lg: none;
   --shadow-xl: none;
-}
-
-[data-theme="light"] {
-  // Light theme = "printout" mode: teletext page printed on paper
-  --bg-primary: #ffffff;
-  --bg-primary-rgb: 255, 255, 255;
-  --bg-secondary: #f0f0f0;
-  --bg-card: #ffffff;
-  --text-primary: #000000;
-  --text-secondary: #333333;
-  --border-color: #000000;
-
-  --accent: #cc0000;
-  --accent-hover: #990000;
-  --accent-secondary: #b36b00;
 }

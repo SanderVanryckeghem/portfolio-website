@@ -70,7 +70,10 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
         background: var(--bg-primary);
         padding: 3rem 0 0;
         margin-top: 5rem;
-        border-top: 2px solid var(--accent);
+        border-style: solid;
+        border-width: 3px 0 0 0;
+        border-image-source: var(--tt-bars);
+        border-image-slice: 1;
       }
 
       .footer-content {
@@ -98,11 +101,16 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
       }
 
       .footer-section {
+        &:nth-child(1) { --section-color: var(--tt-red); }
+        &:nth-child(2) { --section-color: var(--tt-cyan); }
+        &:nth-child(3) { --section-color: var(--tt-green); }
+        &:nth-child(4) { --section-color: var(--tt-magenta); }
+
         h4 {
           font-family: var(--font-display);
           letter-spacing: 1px;
           margin-bottom: 1rem;
-          color: var(--accent);
+          color: var(--section-color, var(--accent));
         }
       }
 
@@ -119,7 +127,7 @@ import { SocialLinksComponent } from '../../shared/social-links/social-links';
             transition: color var(--transition-base);
 
             &:hover {
-              color: var(--accent);
+              color: var(--section-color, var(--accent));
             }
           }
         }

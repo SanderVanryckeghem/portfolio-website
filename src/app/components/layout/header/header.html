@@ -19,16 +19,8 @@
           }
         </ul>
 
-        <!-- Theme Toggle, Color Toggle & Mobile Menu -->
+        <!-- Mobile Menu Toggle -->
         <div class="nav-actions">
-          <div class="remote">
-            <span class="remote-label">SRC</span>
-            <button class="remote-btn src-btn" (click)="toggleTheme()"
-              [title]="(isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode'">
-              SRC
-            </button>
-          </div>
-
           <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
             <span></span>
             <span></span>

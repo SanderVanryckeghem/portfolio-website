@@ -6,9 +6,6 @@ import {
   inject,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
-import { Observable } from 'rxjs';
-import { ThemeService } from '../../../services/theme';
 import { AnimationService } from '../../../services/animation';
 
 interface NavLink {
@@ -21,16 +18,14 @@ interface NavLink {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [AsyncPipe],
+  imports: [],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  private readonly themeService = inject(ThemeService);
   private readonly animationService = inject(AnimationService);
 
-  isDarkMode$: Observable<boolean>;
   isScrolled = false;
   isMobileMenuOpen = false;
   activeSection = 'home';
@@ -45,10 +40,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { label: 'Contact', href: 'contact', icon: 'fas fa-envelope', page: '600' },
   ];
 
-  constructor() {
-    this.isDarkMode$ = this.themeService.darkMode$;
-  }
-
   ngOnInit(): void {
     this.observeActiveSection();
   }
@@ -62,10 +53,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
     this.isScrolled = window.scrollY > 50;
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
   }
 
   toggleMobileMenu(): void {

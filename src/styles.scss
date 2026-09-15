@@ -46,10 +46,6 @@ body::before {
   opacity: 0.3;
 }
 
-[data-theme="light"] body::before {
-  opacity: 0.2;
-}
-
 // Container
 .container {
   max-width: 1200px;

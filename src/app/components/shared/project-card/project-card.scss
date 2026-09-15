@@ -2,7 +2,7 @@
 
 .card {
   background: var(--bg-card);
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--card-color, var(--border-color));
   overflow: hidden;
   transition: all var(--transition-base);
   height: 100%;
@@ -11,8 +11,6 @@
   cursor: pointer;
 
   &:hover {
-    border-color: var(--accent);
-
     .card-overlay {
       opacity: 1;
     }
@@ -50,8 +48,8 @@
   z-index: 5;
 
   &:hover {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--card-color, var(--accent));
+    border-color: var(--card-color, var(--accent));
     color: var(--tt-black);
   }
 }
@@ -71,9 +69,9 @@
 
   .view-btn {
     padding: 0.75rem 1.5rem;
-    background: var(--accent);
+    background: var(--card-color, var(--accent));
     color: var(--tt-black);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--card-color, var(--accent));
     font-size: 1rem;
     cursor: pointer;
     transition: all var(--transition-base);
@@ -83,7 +81,7 @@
 
     &:hover {
       background: var(--tt-black);
-      color: var(--accent);
+      color: var(--card-color, var(--accent));
     }
   }
 }
@@ -100,7 +98,7 @@
   font-size: 1.8rem;
   letter-spacing: 1px;
   margin-bottom: 0.75rem;
-  color: var(--text-primary);
+  color: var(--card-color, var(--text-primary));
 }
 
 .card-description {
@@ -119,9 +117,9 @@
   .tech-badge {
     padding: 0.3rem 0.8rem;
     background: transparent;
-    color: var(--accent);
+    color: var(--card-color, var(--accent));
     font-size: 0.85rem;
-    border: 1px solid var(--accent);
+    border: 1px solid var(--card-color, var(--accent));
 
     &.more {
       border-color: var(--text-secondary);
@@ -147,13 +145,13 @@
     gap: 0.5rem;
 
     &.primary {
-      background: var(--accent);
+      background: var(--card-color, var(--accent));
       color: var(--tt-black);
-      border: 2px solid var(--accent);
+      border: 2px solid var(--card-color, var(--accent));
 
       &:hover {
         background: var(--bg-primary);
-        color: var(--accent);
+        color: var(--card-color, var(--accent));
       }
     }
 
@@ -163,8 +161,8 @@
       border: 2px solid var(--border-color);
 
       &:hover {
-        border-color: var(--accent);
-        color: var(--accent);
+        border-color: var(--card-color, var(--accent));
+        color: var(--card-color, var(--accent));
       }
     }
   }

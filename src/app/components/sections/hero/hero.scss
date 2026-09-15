@@ -35,7 +35,6 @@
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--accent);
   margin-bottom: 1.5rem;
   opacity: 0;
   display: flex;
@@ -62,6 +61,10 @@
   line-height: 1;
   margin: 0;
   text-align: center;
+
+  &:nth-child(3n+1) { color: var(--tt-red); }
+  &:nth-child(3n+2) { color: var(--tt-cyan); }
+  &:nth-child(3n+3) { color: var(--tt-yellow); }
 }
 
 // Character styling for 3D rolling effect
@@ -92,7 +95,7 @@
 .btn {
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--btn-color, var(--accent));
   cursor: pointer;
   transition: all var(--transition-base);
   display: inline-flex;
@@ -101,33 +104,36 @@
 }
 
 .btn-primary {
-  background: var(--accent);
+  --btn-color: var(--tt-red);
+  background: var(--btn-color);
   color: var(--tt-black);
 
   &:hover {
     background: var(--bg-primary);
-    color: var(--accent);
+    color: var(--btn-color);
   }
 }
 
 .btn-secondary {
+  --btn-color: var(--tt-cyan);
   background: transparent;
   color: var(--text-primary);
   border-color: var(--border-color);
 
   &:hover {
-    border-color: var(--accent);
-    background: var(--accent);
+    border-color: var(--btn-color);
+    background: var(--btn-color);
     color: var(--tt-black);
   }
 }
 
 .btn-outline {
+  --btn-color: var(--tt-magenta);
   background: transparent;
-  color: var(--accent);
+  color: var(--btn-color);
 
   &:hover {
-    background: var(--accent);
+    background: var(--btn-color);
     color: var(--tt-black);
   }
 }
@@ -149,9 +155,13 @@
   font-size: 1.2rem;
   transition: all var(--transition-base);
 
+  &:nth-child(3n+1) { --item-color: var(--tt-magenta); }
+  &:nth-child(3n+2) { --item-color: var(--tt-cyan); }
+  &:nth-child(3n+3) { --item-color: var(--tt-green); }
+
   &:hover {
-    border-color: var(--accent);
-    background: var(--accent);
+    border-color: var(--item-color, var(--accent));
+    background: var(--item-color, var(--accent));
     color: var(--tt-black);
   }
 }

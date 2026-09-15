@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { HeaderComponent } from './components/layout/header/header';
 import { FooterComponent } from './components/layout/footer/footer';
 import { HeroComponent } from './components/sections/hero/hero';
@@ -25,11 +25,7 @@ import { ThemeService } from './services/theme';
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+  // Injecting this triggers its one-time favicon setup.
   private readonly themeService = inject(ThemeService);
-
-  ngOnInit(): void {
-    // Initialize theme
-    this.themeService.darkMode$.subscribe();
-  }
 }

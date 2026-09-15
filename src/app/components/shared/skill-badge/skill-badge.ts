@@ -16,8 +16,8 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
         display: inline-block;
         padding: 0.4rem 0.9rem;
         background: transparent;
-        border: 1px solid var(--accent);
-        color: var(--accent);
+        border: 1px solid var(--skill-color, var(--accent));
+        color: var(--skill-color, var(--accent));
         font-family: var(--font-display);
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -26,7 +26,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
         cursor: default;
 
         &:hover {
-          background: var(--accent);
+          background: var(--skill-color, var(--accent));
           color: var(--bg-primary);
         }
       }

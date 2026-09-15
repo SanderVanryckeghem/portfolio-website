@@ -6,22 +6,34 @@ import {
   ElementRef,
   ViewChild,
   ChangeDetectionStrategy,
-  inject,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { ThemeService } from '../../../services/theme';
 
 const GLYPHS = '█▓▒░#%&*+=-.:· 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const CELL_SIZE = 20;
 const TUNE_IN_DURATION_MS = 1100;
 
-// Print mode (light) keeps the original, subtle effect. TV mode (dark) is
-// boosted - on a white "page" a loud background fights the text, but on the
-// black on-air screen it reads as intended interference.
 const EFFECT = {
-  light: { loudAlphaMin: 0.15, loudAlphaSpan: 0.35, flickerRate: 0.015, accentChance: 0, flickerAlphaMin: 0.04, flickerAlphaSpan: 0.06, accentAlphaMin: 0, accentAlphaSpan: 0, baseAlpha: 0.03 },
-  dark: { loudAlphaMin: 0.3, loudAlphaSpan: 0.45, flickerRate: 0.05, accentChance: 0.4, flickerAlphaMin: 0.12, flickerAlphaSpan: 0.15, accentAlphaMin: 0.15, accentAlphaSpan: 0.2, baseAlpha: 0.08 },
+  loudAlphaMin: 0.3,
+  loudAlphaSpan: 0.45,
+  flickerRate: 0.05,
+  accentChance: 0.4,
+  flickerAlphaMin: 0.12,
+  flickerAlphaSpan: 0.15,
+  accentAlphaMin: 0.15,
+  accentAlphaSpan: 0.2,
+  baseAlpha: 0.08,
 };
+
+// Mix of the teletext palette rather than one fixed accent colour
+const ACCENT_RGB_OPTIONS = [
+  '255, 0, 0', // red
+  '0, 255, 0', // green
+  '255, 255, 0', // yellow
+  '0, 255, 255', // cyan
+  '59, 130, 246', // bright blue
+  '255, 0, 255', // magenta
+];
+const DIM_RGB = '255, 255, 255';
 
 @Component({
   selector: 'app-particle-background',
@@ -46,11 +58,8 @@ const EFFECT = {
 export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  private readonly themeService = inject(ThemeService);
   private ctx!: CanvasRenderingContext2D;
   private animationId!: number;
-  private darkModeSubscription!: Subscription;
-  private isDark = true;
   private cols = 0;
   private rows = 0;
   private grid: string[] = [];
@@ -61,10 +70,6 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
 
   ngOnInit(): void {
     window.addEventListener('resize', this.boundHandleResize);
-
-    this.darkModeSubscription = this.themeService.darkMode$.subscribe((isDark) => {
-      this.isDark = isDark;
-    });
   }
 
   ngAfterViewInit(): void {
@@ -78,7 +83,6 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
-    this.darkModeSubscription?.unsubscribe();
     window.removeEventListener('resize', this.boundHandleResize);
   }
 
@@ -104,6 +108,10 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
   }
 
+  private randomAccentRgb(): string {
+    return ACCENT_RGB_OPTIONS[Math.floor(Math.random() * ACCENT_RGB_OPTIONS.length)];
+  }
+
   // "Signal tuning" reveal: dense noise settling into a calm, sparsely flickering grid
   private animate(): void {
     const now = performance.now();
@@ -125,10 +133,6 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     this.ctx.font = `${CELL_SIZE}px 'VT323', 'Courier New', monospace`;
     this.ctx.textBaseline = 'top';
 
-    const dim = this.isDark ? '255, 255, 255' : '0, 0, 0';
-    const accentRgb = this.hexToRgb(this.isDark ? '#ffff00' : '#cc0000');
-    const fx = this.isDark ? EFFECT.dark : EFFECT.light;
-
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         const index = row * this.cols + col;
@@ -136,17 +140,17 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
 
         if (isLoud) {
           this.grid[index] = this.randomGlyph();
-          const alpha = fx.loudAlphaMin + Math.random() * fx.loudAlphaSpan;
-          this.ctx.fillStyle = `rgba(${accentRgb}, ${alpha})`;
-        } else if (Math.random() < fx.flickerRate) {
+          const alpha = EFFECT.loudAlphaMin + Math.random() * EFFECT.loudAlphaSpan;
+          this.ctx.fillStyle = `rgba(${this.randomAccentRgb()}, ${alpha})`;
+        } else if (Math.random() < EFFECT.flickerRate) {
           this.grid[index] = this.randomGlyph();
-          if (Math.random() < fx.accentChance) {
-            this.ctx.fillStyle = `rgba(${accentRgb}, ${fx.accentAlphaMin + Math.random() * fx.accentAlphaSpan})`;
+          if (Math.random() < EFFECT.accentChance) {
+            this.ctx.fillStyle = `rgba(${this.randomAccentRgb()}, ${EFFECT.accentAlphaMin + Math.random() * EFFECT.accentAlphaSpan})`;
           } else {
-            this.ctx.fillStyle = `rgba(${dim}, ${fx.flickerAlphaMin + Math.random() * fx.flickerAlphaSpan})`;
+            this.ctx.fillStyle = `rgba(${DIM_RGB}, ${EFFECT.flickerAlphaMin + Math.random() * EFFECT.flickerAlphaSpan})`;
           }
         } else {
-          this.ctx.fillStyle = `rgba(${dim}, ${fx.baseAlpha})`;
+          this.ctx.fillStyle = `rgba(${DIM_RGB}, ${EFFECT.baseAlpha})`;
         }
 
         this.ctx.fillText(this.grid[index], col * CELL_SIZE, row * CELL_SIZE);
@@ -154,13 +158,6 @@ export class ParticleBackgroundComponent implements OnInit, AfterViewInit, OnDes
     }
 
     this.animationId = requestAnimationFrame(() => this.animate());
-  }
-
-  private hexToRgb(hex: string): string {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `${r}, ${g}, ${b}`;
   }
 
   private handleResize(): void {

@@ -15,7 +15,7 @@
 
 .section-title {
   display: inline-block;
-  background: var(--accent);
+  background: var(--tt-green);
   color: var(--tt-black);
   padding: 0.25rem 1rem;
   margin-bottom: 0.5rem;
@@ -53,7 +53,10 @@
     height: 350px;
     object-fit: cover;
     display: block;
-    border: 3px solid var(--accent);
+    border-style: solid;
+    border-width: 4px;
+    border-image-source: var(--tt-bars);
+    border-image-slice: 1;
 
     @media (max-width: 768px) {
       width: 280px;
@@ -90,9 +93,8 @@
     gap: 0.5rem;
     color: var(--text-secondary);
 
-    i {
-      color: var(--accent);
-    }
+    &:nth-child(1) i { color: var(--tt-cyan); }
+    &:nth-child(2) i { color: var(--tt-magenta); }
   }
 }
 
@@ -109,6 +111,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+
+  app-skill-badge {
+    &:nth-child(6n+1) { --skill-color: var(--tt-red); }
+    &:nth-child(6n+2) { --skill-color: var(--tt-green); }
+    &:nth-child(6n+3) { --skill-color: var(--tt-yellow); }
+    &:nth-child(6n+4) { --skill-color: var(--tt-cyan); }
+    &:nth-child(6n+5) { --skill-color: var(--tt-magenta); }
+    &:nth-child(6n+6) { --skill-color: var(--tt-blue-bright); }
+  }
 }
 
 .stats-grid {
@@ -127,12 +138,12 @@
   transition: all var(--transition-base);
 
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--stat-color, var(--accent));
   }
 
   i {
     font-size: 2.5rem;
-    color: var(--accent);
+    color: var(--stat-color, var(--accent));
     margin-bottom: 1rem;
   }
 
@@ -140,13 +151,18 @@
     font-family: var(--font-display);
     font-size: 2.4rem;
     margin-bottom: 0.5rem;
-    color: var(--accent);
+    color: var(--stat-color, var(--accent));
   }
 
   p {
     color: var(--text-secondary);
     font-size: 0.9rem;
   }
+
+  &:nth-child(1) { --stat-color: var(--tt-red); }
+  &:nth-child(2) { --stat-color: var(--tt-cyan); }
+  &:nth-child(3) { --stat-color: var(--tt-yellow); }
+  &:nth-child(4) { --stat-color: var(--tt-magenta); }
 }
 
 .btn {

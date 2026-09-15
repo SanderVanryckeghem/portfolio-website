@@ -45,9 +45,13 @@ import { SocialLinks } from '../../../models/developer.model';
         transition: all var(--transition-base);
         text-decoration: none;
 
+        &:nth-child(3n+1) { --item-color: var(--tt-magenta); }
+        &:nth-child(3n+2) { --item-color: var(--tt-cyan); }
+        &:nth-child(3n+3) { --item-color: var(--tt-green); }
+
         &:hover {
-          background: var(--accent);
-          border-color: var(--accent);
+          background: var(--item-color, var(--accent));
+          border-color: var(--item-color, var(--accent));
           color: var(--tt-black);
         }
       }

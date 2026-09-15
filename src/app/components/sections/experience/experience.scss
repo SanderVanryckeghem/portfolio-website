@@ -12,7 +12,7 @@
 
   .section-title {
     display: inline-block;
-    background: var(--accent);
+    background: var(--tt-cyan);
     color: var(--tt-black);
     padding: 0.25rem 1rem;
     margin-bottom: 0.5rem;
@@ -43,6 +43,12 @@
   }
 }
 
+.experience-wrapper {
+  > *:nth-child(1) .subsection-title i { color: var(--tt-cyan); }
+  > *:nth-child(2) .subsection-title i { color: var(--tt-yellow); }
+  > *:nth-child(3) .subsection-title i { color: var(--tt-magenta); }
+}
+
 // Timeline styles
 .timeline {
   position: relative;
@@ -67,6 +73,13 @@
     padding: 0 3rem;
     margin-bottom: 3rem;
     // Initial state handled by GSAP for scroll-triggered animation
+
+    // Cycle a signature colour per timeline entry
+    &:nth-child(5n+1) { --item-color: var(--tt-red); }
+    &:nth-child(5n+2) { --item-color: var(--tt-green); }
+    &:nth-child(5n+3) { --item-color: var(--tt-yellow); }
+    &:nth-child(5n+4) { --item-color: var(--tt-cyan); }
+    &:nth-child(5n+5) { --item-color: var(--tt-magenta); }
 
     &.left {
       left: 0;
@@ -118,7 +131,7 @@
       top: 2rem;
       width: 14px;
       height: 14px;
-      background: var(--accent);
+      background: var(--item-color, var(--accent));
       border: 3px solid var(--bg-primary);
       z-index: 3;
     }
@@ -130,11 +143,11 @@
       transition: all var(--transition-base);
 
       &:hover {
-        border-color: var(--accent);
+        border-color: var(--item-color, var(--accent));
       }
 
       .timeline-date {
-        color: var(--accent);
+        color: var(--item-color, var(--accent));
         font-size: 0.9rem;
         font-weight: 600;
         display: inline-block;
@@ -183,7 +196,7 @@
               content: '▸';
               position: absolute;
               left: 0;
-              color: var(--accent);
+              color: var(--item-color, var(--accent));
             }
           }
         }
@@ -198,9 +211,9 @@
         .tech-tag {
           padding: 0.3rem 0.8rem;
           background: transparent;
-          color: var(--accent);
+          color: var(--item-color, var(--accent));
           font-size: 0.85rem;
-          border: 1px solid var(--accent);
+          border: 1px solid var(--item-color, var(--accent));
         }
       }
     }
@@ -221,11 +234,17 @@
   padding: 2rem;
   transition: all var(--transition-base);
 
+  &:nth-child(5n+1) { --item-color: var(--tt-red); }
+  &:nth-child(5n+2) { --item-color: var(--tt-green); }
+  &:nth-child(5n+3) { --item-color: var(--tt-yellow); }
+  &:nth-child(5n+4) { --item-color: var(--tt-cyan); }
+  &:nth-child(5n+5) { --item-color: var(--tt-magenta); }
+
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--item-color, var(--accent));
 
     .edu-icon {
-      background: var(--accent);
+      background: var(--item-color, var(--accent));
 
       i {
         color: var(--tt-black);
@@ -237,7 +256,7 @@
     width: 60px;
     height: 60px;
     background: var(--bg-card);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--item-color, var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -246,7 +265,7 @@
 
     i {
       font-size: 1.5rem;
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
     }
   }
 
@@ -260,7 +279,7 @@
     }
 
     h5 {
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
       margin-bottom: 0.5rem;
     }
 
@@ -268,8 +287,8 @@
       display: inline-block;
       padding: 0.25rem 0.75rem;
       background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
+      border: 1px solid var(--item-color, var(--accent));
+      color: var(--item-color, var(--accent));
       font-size: 0.85rem;
       margin-bottom: 1rem;
     }
@@ -288,9 +307,9 @@
       .tech-tag {
         padding: 0.3rem 0.8rem;
         background: transparent;
-        color: var(--accent);
+        color: var(--item-color, var(--accent));
         font-size: 0.85rem;
-        border: 1px solid var(--accent);
+        border: 1px solid var(--item-color, var(--accent));
       }
     }
   }
@@ -315,11 +334,18 @@
   transition: all var(--transition-base);
   border: 2px solid var(--border-color);
 
+  &:nth-child(6n+1) { --item-color: var(--tt-red); }
+  &:nth-child(6n+2) { --item-color: var(--tt-green); }
+  &:nth-child(6n+3) { --item-color: var(--tt-yellow); }
+  &:nth-child(6n+4) { --item-color: var(--tt-cyan); }
+  &:nth-child(6n+5) { --item-color: var(--tt-magenta); }
+  &:nth-child(6n+6) { --item-color: var(--tt-blue-bright); }
+
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--item-color, var(--accent));
 
     .cert-icon {
-      background: var(--accent);
+      background: var(--item-color, var(--accent));
 
       i {
         color: var(--tt-black);
@@ -331,7 +357,7 @@
     width: 50px;
     height: 50px;
     background: var(--bg-card);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--item-color, var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -340,7 +366,7 @@
 
     i {
       font-size: 1.3rem;
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
     }
   }
 
@@ -356,7 +382,7 @@
     }
 
     h5 {
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
       font-size: 0.9rem;
       margin-bottom: 0.5rem;
       font-weight: 500;
@@ -372,8 +398,8 @@
       .cert-achieved {
         padding: 0.15rem 0.5rem;
         background: transparent;
-        border: 1px solid var(--accent);
-        color: var(--accent);
+        border: 1px solid var(--item-color, var(--accent));
+        color: var(--item-color, var(--accent));
       }
 
       .cert-expiry {

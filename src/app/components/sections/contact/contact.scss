@@ -16,7 +16,7 @@
 
   .section-title {
     display: inline-block;
-    background: var(--accent);
+    background: var(--tt-red);
     color: var(--tt-black);
     padding: 0.25rem 1rem;
     margin-bottom: 0.5rem;
@@ -57,6 +57,11 @@
   .form-group {
     position: relative;
 
+    &:nth-child(1) { --field-color: var(--tt-red); }
+    &:nth-child(2) { --field-color: var(--tt-cyan); }
+    &:nth-child(3) { --field-color: var(--tt-yellow); }
+    &:nth-child(4) { --field-color: var(--tt-magenta); }
+
     input,
     textarea {
       width: 100%;
@@ -70,13 +75,13 @@
 
       &:focus {
         outline: none;
-        border-color: var(--accent);
+        border-color: var(--field-color, var(--accent));
 
         ~ label {
           top: -10px;
           left: 1rem;
           font-size: 0.85rem;
-          color: var(--accent);
+          color: var(--field-color, var(--accent));
           background: var(--bg-secondary);
           padding: 0 0.5rem;
         }
@@ -86,7 +91,7 @@
         top: -10px;
         left: 1rem;
         font-size: 0.85rem;
-        color: var(--accent);
+        color: var(--field-color, var(--accent));
         background: var(--bg-secondary);
         padding: 0 0.5rem;
       }
@@ -121,9 +126,9 @@
 
   .submit-btn {
     padding: 1.2rem 3rem;
-    background: var(--accent);
+    background: var(--tt-green);
     color: var(--tt-black);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--tt-green);
     font-size: 1.1rem;
     cursor: pointer;
     transition: all var(--transition-base);
@@ -139,7 +144,7 @@
 
     &:hover:not(:disabled) {
       background: var(--bg-primary);
-      color: var(--accent);
+      color: var(--tt-green);
     }
 
     &:disabled {
@@ -190,6 +195,11 @@
   transition: all var(--transition-base);
   opacity: 0;
 
+  &:nth-child(4n+1) { --item-color: var(--tt-red); }
+  &:nth-child(4n+2) { --item-color: var(--tt-yellow); }
+  &:nth-child(4n+3) { --item-color: var(--tt-cyan); }
+  &:nth-child(4n+4) { --item-color: var(--tt-magenta); }
+
   @media (max-width: 480px) {
     flex-direction: column;
     text-align: center;
@@ -198,10 +208,10 @@
   }
 
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--item-color, var(--accent));
 
     .info-icon {
-      background: var(--accent);
+      background: var(--item-color, var(--accent));
 
       i {
         color: var(--tt-black);
@@ -214,7 +224,7 @@
     height: 50px;
     min-width: 50px;
     background: transparent;
-    border: 2px solid var(--accent);
+    border: 2px solid var(--item-color, var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -222,7 +232,7 @@
 
     i {
       font-size: 1.2rem;
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
     }
   }
 
@@ -244,7 +254,7 @@
     }
 
     a:hover {
-      color: var(--accent);
+      color: var(--item-color, var(--accent));
     }
   }
 }
@@ -289,9 +299,13 @@
     transition: all var(--transition-base);
     text-decoration: none;
 
+    &:nth-child(3n+1) { --item-color: var(--tt-green); }
+    &:nth-child(3n+2) { --item-color: var(--tt-cyan); }
+    &:nth-child(3n+3) { --item-color: var(--tt-yellow); }
+
     &:hover {
-      border-color: var(--accent);
-      background: var(--accent);
+      border-color: var(--item-color, var(--accent));
+      background: var(--item-color, var(--accent));
       color: var(--tt-black);
     }
   }
@@ -300,13 +314,15 @@
 .additional-info {
   padding: 1.5rem;
   background: var(--bg-card);
-  border-left: 4px solid var(--accent);
+  border-style: solid;
+  border-width: 0 0 0 4px;
+  border-image-source: linear-gradient(180deg, var(--tt-red), var(--tt-yellow), var(--tt-green), var(--tt-cyan), var(--tt-blue-bright), var(--tt-magenta));
+  border-image-slice: 1;
 
   @media (max-width: 480px) {
     padding: 1.25rem;
     text-align: center;
-    border-left: none;
-    border-top: 4px solid var(--accent);
+    border-width: 4px 0 0 0;
   }
 
   p {

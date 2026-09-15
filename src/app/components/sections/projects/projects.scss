@@ -13,7 +13,7 @@
 
 .section-title {
   display: inline-block;
-  background: var(--accent);
+  background: var(--tt-magenta);
   color: var(--tt-black);
   padding: 0.25rem 1rem;
   margin-bottom: 1rem;
@@ -60,14 +60,21 @@
     white-space: nowrap;
     flex-shrink: 0;
 
+    &:nth-child(6n+1) { --filter-color: var(--tt-red); }
+    &:nth-child(6n+2) { --filter-color: var(--tt-green); }
+    &:nth-child(6n+3) { --filter-color: var(--tt-yellow); }
+    &:nth-child(6n+4) { --filter-color: var(--tt-cyan); }
+    &:nth-child(6n+5) { --filter-color: var(--tt-blue-bright); }
+    &:nth-child(6n+6) { --filter-color: var(--tt-magenta); }
+
     &:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+      border-color: var(--filter-color, var(--accent));
+      color: var(--filter-color, var(--accent));
     }
 
     &.active {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--filter-color, var(--accent));
+      border-color: var(--filter-color, var(--accent));
       color: var(--tt-black);
     }
   }
@@ -81,6 +88,13 @@
   .project-card {
     opacity: 0;
     transform: translateY(50px);
+
+    // Cycle a signature colour per card, picked up by project-card.scss
+    &:nth-child(5n+1) { --card-color: var(--tt-red); }
+    &:nth-child(5n+2) { --card-color: var(--tt-green); }
+    &:nth-child(5n+3) { --card-color: var(--tt-yellow); }
+    &:nth-child(5n+4) { --card-color: var(--tt-cyan); }
+    &:nth-child(5n+5) { --card-color: var(--tt-magenta); }
   }
 }
 
