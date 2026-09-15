@@ -41,8 +41,11 @@ export class CVGeneratorService {
   private readonly SIDEBAR_PADDING = 8;
 
   private getActiveColors(): CVColors {
+    // The site's --accent is yellow (built for the black teletext background)
+    // and disappears on the CV's white page, so the CV uses its own accent -
+    // the site's brightened blue swatch, which reads clearly on white.
     const rootStyles = getComputedStyle(document.documentElement);
-    const accentColor = rootStyles.getPropertyValue('--accent').trim();
+    const accentColor = rootStyles.getPropertyValue('--tt-blue-bright').trim();
 
     return {
       primary: this.hexToRgb(accentColor),
@@ -60,7 +63,7 @@ export class CVGeneratorService {
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
     if (isNaN(r) || isNaN(g) || isNaN(b)) {
-      return [249, 115, 22]; // Default orange
+      return [59, 130, 246]; // Default blue
     }
     return [r, g, b];
   }
