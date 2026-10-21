@@ -212,10 +212,13 @@ export class TeletextPagesService {
         entry('Send Message', PAGE.message),
         leader('Download CV', CV, 'PDF'),
         blank(),
+        // On the 25-row screen, a second blank centres the hint between the list and Fastext.
+        ...(gridCols() === COLS ? [blank()] : []),
         text(
           gridCols() === COLS
             ? 'Key in a 3-digit page number, or use the coloured keys below.'
             : 'Tap a topic, or use the coloured buttons below.',
+          { centre: true },
         ),
       ],
     };

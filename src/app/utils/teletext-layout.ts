@@ -87,6 +87,8 @@ interface TextOpts {
   indent?: number;
   link?: TtTarget;
   keepTogether?: boolean;
+  // Centre each wrapped line on the full screen width (ignores indent).
+  centre?: boolean;
 }
 
 // A wrapped paragraph of body text.
@@ -97,9 +99,12 @@ export function text(content: string, opts: TextOpts = {}): TtBlock {
     tag: opts.tag ?? 'p',
     link: opts.link,
     keepTogether: opts.keepTogether,
-    rows: wrap(content, textWidth() - indent).map((line) =>
-      row([{ text: pad, decorative: true }, { text: line, fg: opts.fg }]),
-    ),
+    rows: wrap(content, textWidth() - indent).map((line) => {
+      const lead = opts.centre
+        ? ' '.repeat(Math.floor((activeCols - line.trimEnd().length) / 2))
+        : pad;
+      return row([{ text: lead, decorative: true }, { text: line, fg: opts.fg }]);
+    }),
   };
 }
 
