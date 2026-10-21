@@ -21,6 +21,9 @@
 
 html {
   background: var(--tt-black);
+  // The screen is sized from the page width, so keep that width stable when a
+  // vertical scrollbar appears.
+  scrollbar-gutter: stable;
 }
 
 body {

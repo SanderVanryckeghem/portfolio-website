@@ -24,9 +24,8 @@ const SERVICE_NAME = 'SANDERFAX';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Space left around the screen: 16px side gutters plus room for the remote strip.
+// Side gutters around the screen.
 const GUTTER = 16;
-const REMOTE_ALLOWANCE = 88;
 
 @Component({
   selector: 'app-teletext-screen',
@@ -183,20 +182,14 @@ export class TeletextScreenComponent {
     return (node as { block: TtBlock }).block;
   }
 
-  // Scale the 40x25 screen to fit the viewport. Landscape uses the extended
-  // (wider) font for TV proportions; portrait phones use the normal width and
-  // scroll vertically instead of breaking the grid. Cell sizes are kept to
-  // whole pixels where possible so mosaic graphics join up without seams.
+  // Scale the 40x25 screen to the full page width; the height follows and the
+  // page scrolls vertically if needed, so the grid never breaks. Landscape uses
+  // the extended (wider) font for TV proportions, portrait the normal width.
   private fit(): void {
     const availW = document.documentElement.clientWidth - GUTTER * 2;
-    const availH = window.innerHeight - GUTTER * 2 - REMOTE_ALLOWANCE;
-    const narrow = availW / availH < 1;
-    const raw = narrow ? availW / 24 : Math.min(availW / 30, availH / ROWS);
-    const step = narrow ? 5 : 4;
-    let size = Math.floor(raw);
-    if (size >= step * 4) size = Math.floor(size / step) * step;
+    const narrow = availW / window.innerHeight < 1;
     this.narrow.set(narrow);
-    this.fontSize.set(Math.max(8, size));
+    this.fontSize.set(Math.max(8, availW / (narrow ? 24 : 30)));
   }
 }
 
