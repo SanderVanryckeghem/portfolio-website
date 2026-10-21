@@ -15,7 +15,8 @@ export class PortfolioService {
     name: 'Sander Vanryckeghem',
     title: 'Front-end Developer',
     bio: 'I am a software developer with a strong passion for front-end development and creating intuitive, visually appealing user interfaces. Thanks to my educational background and eagerness to learn, I effortlessly pick up new technologies.',
-    avatar: 'assets/images/avatar_normal.png',
+    avatar: 'assets/images/avatar_teletext_transparent.png',
+    avatarCv: 'assets/images/avatar_normal.png',
     skills: [
       'React',
       'React Native',
@@ -32,6 +33,7 @@ export class PortfolioService {
       'Figma',
     ],
     email: 'sandervanryckeghem@outlook.com',
+    phone: '+32 499 47 03 43',
     location: 'Deinze, Belgium',
     social: {
       github: 'https://github.com/SanderVanryckeghem',

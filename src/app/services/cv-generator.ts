@@ -77,7 +77,9 @@ export class CVGeneratorService {
       certificates: this.portfolioService.getCertificates(),
       projects: this.portfolioService.getCVProjects(),
     }).subscribe(async (data) => {
-      const avatarBase64 = await this.loadImageAsBase64(data.developer.avatar);
+      const avatarBase64 = await this.loadImageAsBase64(
+        data.developer.avatarCv || data.developer.avatar,
+      );
       this.createPDF(data, avatarBase64);
     });
   }

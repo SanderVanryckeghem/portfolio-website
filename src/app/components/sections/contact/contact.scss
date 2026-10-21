@@ -1,342 +1,128 @@
-@use '../../../styles/variables';
+// Form controls sit on the teletext grid: 1 row tall, widths in character cells.
+// Fields are white on blue; focus inverts them (blue on white).
 
-.contact {
-  padding: 5rem 0;
-  background: var(--bg-secondary);
-  overflow-x: hidden;
+.tt-row {
+  padding-left: 1ch;
+}
 
-  @media (max-width: 768px) {
-    padding: 3rem 0;
+input,
+textarea,
+button {
+  font: inherit;
+  line-height: 1;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  background: var(--tt-blue);
+  color: var(--tt-white);
+  caret-color: var(--tt-yellow);
+}
+
+input {
+  width: 29ch;
+  height: 1em;
+}
+
+textarea {
+  display: inline-block;
+  width: 38ch;
+  height: 5em;
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  scrollbar-color: var(--tt-yellow) var(--tt-blue);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  background: var(--tt-white);
+  color: var(--tt-blue);
+}
+
+.tt-area {
+  height: 5em;
+}
+
+button {
+  padding: 0 1ch;
+  color: var(--tt-yellow);
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: var(--tt-yellow);
+    color: var(--tt-blue);
+  }
+
+  // Still a solid block so it reads as a button; white until the form is valid.
+  &:disabled {
+    cursor: default;
+    background: var(--tt-blue);
+    color: var(--tt-white);
   }
 }
 
-.section-header {
-  text-align: center;
-  margin-bottom: 4rem;
-
-  .section-title {
-    display: inline-block;
-    background: var(--tt-red);
-    color: var(--tt-black);
-    padding: 0.25rem 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .section-subtitle {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    margin-top: 1rem;
-  }
+// Two rows for the success/error message, wrapped within the 38-column text area.
+.tt-status {
+  height: 2em;
+  width: 39ch;
+  padding-left: 1ch;
+  color: var(--fg);
+  overflow: hidden;
 }
 
-.contact-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-
-  @media (max-width: 968px) {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
+// Phones: label above a full-width field, with taller fields for touch.
+:host-context(.narrow) {
+  .tt-intro {
+    height: auto;
+    white-space: normal;
   }
 
-  @media (max-width: 768px) {
-    gap: 2rem;
-  }
-}
-
-.contact-form {
-  opacity: 0;
-  transform: translateX(-50px);
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .form-group {
-    position: relative;
-
-    &:nth-child(1) { --field-color: var(--tt-red); }
-    &:nth-child(2) { --field-color: var(--tt-cyan); }
-    &:nth-child(3) { --field-color: var(--tt-yellow); }
-    &:nth-child(4) { --field-color: var(--tt-magenta); }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 1.2rem;
-      background: var(--bg-card);
-      border: 2px solid var(--border-color);
-      color: var(--text-primary);
-      font-size: 1rem;
-      font-family: var(--font-mono);
-      transition: all var(--transition-base);
-
-      &:focus {
-        outline: none;
-        border-color: var(--field-color, var(--accent));
-
-        ~ label {
-          top: -10px;
-          left: 1rem;
-          font-size: 0.85rem;
-          color: var(--field-color, var(--accent));
-          background: var(--bg-secondary);
-          padding: 0 0.5rem;
-        }
-      }
-
-      &:not(:placeholder-shown) ~ label {
-        top: -10px;
-        left: 1rem;
-        font-size: 0.85rem;
-        color: var(--field-color, var(--accent));
-        background: var(--bg-secondary);
-        padding: 0 0.5rem;
-      }
-
-      &.error {
-        border-color: var(--color-error);
-      }
-    }
+  .tt-field {
+    height: auto;
 
     label {
-      position: absolute;
-      top: 50%;
-      left: 1.2rem;
-      transform: translateY(-50%);
-      color: var(--text-secondary);
-      transition: all var(--transition-base);
-      pointer-events: none;
-    }
-
-    textarea ~ label {
-      top: 1.5rem;
-      transform: translateY(0);
-    }
-
-    .error-message {
-      color: var(--color-error);
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
       display: block;
+      height: 1.4em;
+      padding-top: 0.2em;
     }
   }
 
-  .submit-btn {
-    padding: 1.2rem 3rem;
-    background: var(--tt-green);
-    color: var(--tt-black);
-    border: 2px solid var(--tt-green);
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+  input,
+  textarea {
+    width: calc(100% - 1ch);
+  }
+
+  input {
+    height: 1.8em;
+    padding: 0 0.5ch;
+  }
+
+  textarea {
+    height: 7em;
+    padding: 0.3em 0.5ch;
+  }
+
+  .tt-area {
+    height: auto;
+  }
+
+  button {
+    padding: 0.6em 1ch;
+  }
+
+  .tt-row:has(button) {
+    height: auto;
+  }
+
+  .tt-status {
     width: 100%;
-
-    @media (min-width: 769px) {
-      width: auto;
-    }
-
-    &:hover:not(:disabled) {
-      background: var(--bg-primary);
-      color: var(--tt-green);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  .submit-message {
-    padding: 1rem;
-    text-align: center;
-    margin-top: 1rem;
-    font-family: var(--font-mono);
-
-    &.success {
-      background: transparent;
-      color: var(--color-success);
-      border: 2px solid var(--color-success);
-    }
-
-    &.error {
-      background: transparent;
-      color: var(--color-error);
-      border: 2px solid var(--color-error);
-    }
-  }
-}
-
-.contact-info {
-  opacity: 0;
-  transform: translateX(50px);
-}
-
-.info-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.info-card {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: var(--bg-card);
-  border: 2px solid var(--border-color);
-  transition: all var(--transition-base);
-  opacity: 0;
-
-  &:nth-child(4n+1) { --item-color: var(--tt-red); }
-  &:nth-child(4n+2) { --item-color: var(--tt-yellow); }
-  &:nth-child(4n+3) { --item-color: var(--tt-cyan); }
-  &:nth-child(4n+4) { --item-color: var(--tt-magenta); }
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-    padding: 1.25rem;
-  }
-
-  &:hover {
-    border-color: var(--item-color, var(--accent));
-
-    .info-icon {
-      background: var(--item-color, var(--accent));
-
-      i {
-        color: var(--tt-black);
-      }
-    }
-  }
-
-  .info-icon {
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-    background: transparent;
-    border: 2px solid var(--item-color, var(--accent));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-base);
-
-    i {
-      font-size: 1.2rem;
-      color: var(--item-color, var(--accent));
-    }
-  }
-
-  .info-content {
-    flex: 1;
-    min-width: 0;
-
-    h4 {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-bottom: 0.25rem;
-    }
-
-    a, p {
-      color: var(--text-primary);
-      text-decoration: none;
-      transition: color var(--transition-base);
-      word-break: break-word;
-    }
-
-    a:hover {
-      color: var(--item-color, var(--accent));
-    }
-  }
-}
-
-.social-section {
-  margin-bottom: 2rem;
-
-  @media (max-width: 480px) {
-    text-align: center;
-  }
-
-  h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-
-    @media (max-width: 480px) {
-      font-size: 1.1rem;
-    }
-  }
-}
-
-.social-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  @media (max-width: 480px) {
-    justify-content: center;
-  }
-
-  .social-link {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 2px solid var(--border-color);
-    color: var(--text-primary);
-    font-size: 1.3rem;
-    transition: all var(--transition-base);
-    text-decoration: none;
-
-    &:nth-child(3n+1) { --item-color: var(--tt-green); }
-    &:nth-child(3n+2) { --item-color: var(--tt-cyan); }
-    &:nth-child(3n+3) { --item-color: var(--tt-yellow); }
-
-    &:hover {
-      border-color: var(--item-color, var(--accent));
-      background: var(--item-color, var(--accent));
-      color: var(--tt-black);
-    }
-  }
-}
-
-.additional-info {
-  padding: 1.5rem;
-  background: var(--bg-card);
-  border-style: solid;
-  border-width: 0 0 0 4px;
-  border-image-source: linear-gradient(180deg, var(--tt-red), var(--tt-yellow), var(--tt-green), var(--tt-cyan), var(--tt-blue-bright), var(--tt-magenta));
-  border-image-slice: 1;
-
-  @media (max-width: 480px) {
-    padding: 1.25rem;
-    text-align: center;
-    border-width: 4px 0 0 0;
-  }
-
-  p {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-
-    @media (max-width: 480px) {
-      font-size: 0.95rem;
-    }
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+    height: auto;
+    min-height: 2em;
+    padding-top: 0.5em;
   }
 }

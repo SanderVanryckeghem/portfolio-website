@@ -3,6 +3,7 @@ export interface Developer {
   title: string;
   bio: string;
   avatar?: string;
+  avatarCv?: string;
   skills: string[];
   email?: string;
   phone?: string;
