@@ -1,74 +1,16 @@
 :root {
-  // Teletext palette (fixed 7-colour set, Ceefax / BBC Mode 7 style)
+  // The teletext palette - the only eight colours the site ever uses.
   --tt-black: #000000;
-  --tt-white: #ffffff;
   --tt-red: #ff0000;
   --tt-green: #00ff00;
   --tt-yellow: #ffff00;
   --tt-blue: #0000ff;
-  --tt-cyan: #00ffff;
   --tt-magenta: #ff00ff;
-  --tt-blue-bright: #3b82f6; // brightened - pure #0000ff is unreadable as text on black
+  --tt-cyan: #00ffff;
+  --tt-white: #ffffff;
 
-  // On-air teletext: black screen, the only mode this site has
-  --bg-primary: #000000;
-  --bg-primary-rgb: 0, 0, 0;
-  --bg-secondary: #0a0a0a;
-  --bg-card: #000000;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --border-color: #ffffff;
-
-  --accent: var(--tt-yellow);
-  --accent-hover: #e5e500;
-  --accent-secondary: var(--tt-red);
-
-  // Rainbow mix used as a colour-bar border wherever a chrome edge needs one
-  --tt-bars: linear-gradient(
-    90deg,
-    var(--tt-red),
-    var(--tt-yellow),
-    var(--tt-green),
-    var(--tt-cyan),
-    var(--tt-blue-bright),
-    var(--tt-magenta)
-  );
-
-  // Headline/name text ("gradient-text") uses the same rainbow mix as the borders
-  --gradient: var(--tt-bars);
-
-  // Status colors
-  --color-error: var(--tt-red);
-  --color-success: var(--tt-green);
-
-  // Spacing
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-  --spacing-2xl: 5rem;
-
-  // Typography
-  --font-primary: 'Fira Code', 'Courier New', monospace;
-  --font-mono: 'Fira Code', 'Courier New', monospace;
-  --font-display: 'VT323', 'Courier New', monospace;
-
-  // Transitions - snappy, no easing curves
-  --transition-fast: 0.1s linear;
-  --transition-base: 0.15s linear;
-  --transition-slow: 0.25s linear;
-
-  // Border radius - teletext is all hard square cells
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-full: 0;
-
-  // Shadows - flat, no depth
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
+  // Bedstead (public domain SAA5050 / Mode 7 recreation), self-hosted.
+  // The extended cut gives TV-like 4:3-ish proportions on a 40-column screen.
+  --font-teletext: 'Bedstead Extended', 'Bedstead', ui-monospace, 'Courier New', monospace;
+  --font-teletext-narrow: 'Bedstead', ui-monospace, 'Courier New', monospace;
 }

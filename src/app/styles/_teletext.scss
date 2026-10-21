@@ -1,0 +1,88 @@
+// Character-grid primitives shared by every teletext page.
+// One row = 1em tall (line-height 1), one column = 1ch wide (monospace).
+// Colours are only ever the eight --tt-* values; each span carries its
+// foreground/background in --fg/--bg so focus can swap them (inverse video).
+
+$tt-colours: black, red, green, yellow, blue, magenta, cyan, white;
+
+@each $name in $tt-colours {
+  .fg-#{$name} {
+    --fg: var(--tt-#{$name});
+  }
+
+  .bg-#{$name} {
+    --bg: var(--tt-#{$name});
+  }
+}
+
+.tt-row {
+  display: block;
+  height: 1em;
+  white-space: pre;
+  overflow-x: clip;
+  background: var(--bg);
+
+  // Double height: the glyphs are stretched 2x vertically, never wider.
+  &.dbl {
+    height: 2em;
+
+    > .tt-s {
+      display: inline-block;
+      height: 1em;
+      vertical-align: top;
+      transform: scaleY(2);
+      transform-origin: 0 0;
+    }
+  }
+}
+
+.tt-s {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.dbl-s {
+  display: inline-block;
+  height: 1em;
+  vertical-align: top;
+  transform: scaleY(2);
+  transform-origin: 0 0;
+}
+
+// :where() keeps this at zero specificity so span colours (.tt-s) still win.
+:where(.screen a) {
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+// Keyboard focus and hover: inverse video block cursor.
+.tt-link:focus-visible .tt-s:not(.tt-pad),
+.tt-link:hover .tt-s:not(.tt-pad),
+a.tt-s:focus-visible,
+a.tt-s:hover {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+// When Windows High Contrast / forced colours is on, give focus a system outline.
+@media (forced-colors: active) {
+  .screen a:focus-visible,
+  .screen button:focus-visible,
+  .screen input:focus-visible,
+  .screen textarea:focus-visible {
+    outline: 2px solid CanvasText;
+  }
+}

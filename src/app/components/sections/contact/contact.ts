@@ -1,95 +1,50 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  OnDestroy,
-  inject,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContactService } from '../../../services/contact';
-import { AnimationService } from '../../../services/animation';
-import { PortfolioService } from '../../../services/portfolio';
-import { Developer } from '../../../models/developer.model';
-import { SocialLinksComponent } from '../../shared/social-links/social-links';
 
-interface ContactInfo {
-  icon: string;
+interface Field {
+  id: 'name' | 'email' | 'subject';
   label: string;
-  value: string;
-  link: string | null;
+  type: string;
+  autocomplete: string;
 }
 
+// The message form shown on teletext page P430. Contact details themselves
+// live on P420 (built from PortfolioService).
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, SocialLinksComponent],
+  imports: [ReactiveFormsModule],
   templateUrl: './contact.html',
   styleUrls: ['./contact.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ContactComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly contactService = inject(ContactService);
-  private readonly animationService = inject(AnimationService);
-  private readonly portfolioService = inject(PortfolioService);
+
+  readonly fields: Field[] = [
+    { id: 'name', label: 'Name', type: 'text', autocomplete: 'name' },
+    { id: 'email', label: 'Email', type: 'email', autocomplete: 'email' },
+    { id: 'subject', label: 'Subject', type: 'text', autocomplete: 'off' },
+  ];
 
   contactForm!: FormGroup;
-  developer: Developer | null = null;
-  isSubmitting = false;
-  submitMessage = '';
-  submitSuccess = false;
-  isRateLimited = false;
-  cooldownRemaining = '';
+  readonly isSubmitting = signal(false);
+  readonly submitMessage = signal('');
+  readonly submitSuccess = signal(false);
+  readonly isRateLimited = signal(false);
+  readonly cooldownRemaining = signal('');
 
   private readonly COOLDOWN_KEY = 'contact_form_cooldown';
   private readonly COOLDOWN_DURATION = 60 * 60 * 1000;
   private cooldownInterval: ReturnType<typeof setInterval> | null = null;
-
-  contactInfo: ContactInfo[] = [
-    {
-      icon: 'fas fa-envelope',
-      label: 'Email',
-      value: 'sandervanryckeghem@outlook.com',
-      link: 'mailto:sandervanryckeghem@outlook.com',
-    },
-    {
-      icon: 'fas fa-phone',
-      label: 'Phone',
-      value: '+32 499 47 03 43',
-      link: 'tel:+32499470343',
-    },
-    {
-      icon: 'fas fa-map-marker-alt',
-      label: 'Location',
-      value: 'Deinze, Belgium',
-      link: null,
-    },
-  ];
 
   constructor() {
     this.initForm();
   }
 
   ngOnInit(): void {
-    this.portfolioService.getDeveloper().subscribe((dev) => {
-      this.developer = dev;
-      if (dev.email) {
-        this.contactInfo[0].value = dev.email;
-        this.contactInfo[0].link = `mailto:${dev.email}`;
-      }
-      if (dev.location) {
-        this.contactInfo[2].value = dev.location;
-      }
-    });
-
-    // Check if user is rate limited
     this.checkRateLimit();
   }
 
@@ -99,12 +54,22 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  showError(fieldName: string): boolean {
+    const field = this.contactForm.get(fieldName);
+    return !!field && field.touched && field.invalid;
+  }
+
   private checkRateLimit(): void {
-    const lastSubmission = localStorage.getItem(this.COOLDOWN_KEY);
+    let lastSubmission: string | null = null;
+    try {
+      lastSubmission = localStorage.getItem(this.COOLDOWN_KEY);
+    } catch {
+      return;
+    }
     if (lastSubmission) {
       const timePassed = Date.now() - parseInt(lastSubmission, 10);
       if (timePassed < this.COOLDOWN_DURATION) {
-        this.isRateLimited = true;
+        this.isRateLimited.set(true);
         this.startCooldownTimer(this.COOLDOWN_DURATION - timePassed);
       } else {
         localStorage.removeItem(this.COOLDOWN_KEY);
@@ -118,9 +83,13 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cooldownInterval = setInterval(() => {
       remainingTime -= 1000;
       if (remainingTime <= 0) {
-        this.isRateLimited = false;
-        this.cooldownRemaining = '';
-        localStorage.removeItem(this.COOLDOWN_KEY);
+        this.isRateLimited.set(false);
+        this.cooldownRemaining.set('');
+        try {
+          localStorage.removeItem(this.COOLDOWN_KEY);
+        } catch {
+          // Storage unavailable - nothing to clear.
+        }
         if (this.cooldownInterval) {
           clearInterval(this.cooldownInterval);
         }
@@ -133,37 +102,17 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateCooldownDisplay(ms: number): void {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    this.cooldownRemaining = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    this.cooldownRemaining.set(`${minutes}:${seconds.toString().padStart(2, '0')}`);
   }
 
   private setCooldown(): void {
-    localStorage.setItem(this.COOLDOWN_KEY, Date.now().toString());
-    this.isRateLimited = true;
+    try {
+      localStorage.setItem(this.COOLDOWN_KEY, Date.now().toString());
+    } catch {
+      // Storage unavailable - the cooldown still applies for this visit.
+    }
+    this.isRateLimited.set(true);
     this.startCooldownTimer(this.COOLDOWN_DURATION);
-  }
-
-  ngAfterViewInit(): void {
-    this.animationService.animateOnScroll('.contact-form', {
-      opacity: 1,
-      x: 0,
-      duration: 1,
-    });
-
-    this.animationService.animateOnScroll('.contact-info', {
-      opacity: 1,
-      x: 0,
-      duration: 1,
-    });
-
-    this.animationService.animateStagger(
-      '.info-card',
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-      },
-      0.1,
-    );
   }
 
   private initForm(): void {
@@ -176,31 +125,32 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.isRateLimited) {
-      this.submitSuccess = false;
-      this.submitMessage = `Please wait ${this.cooldownRemaining} before sending another message.`;
+    if (this.isRateLimited()) {
+      this.submitSuccess.set(false);
+      this.submitMessage.set(
+        `Please wait ${this.cooldownRemaining()} before sending another message.`,
+      );
       return;
     }
 
     if (this.contactForm.valid) {
-      this.isSubmitting = true;
-      this.submitMessage = '';
+      this.isSubmitting.set(true);
+      this.submitMessage.set('');
 
       this.contactService.submitContact(this.contactForm.value).subscribe({
         next: (response) => {
-          this.submitSuccess = response.success;
-          this.submitMessage = response.message;
+          this.submitSuccess.set(response.success);
+          this.submitMessage.set(response.message);
           if (response.success) {
             this.contactForm.reset();
-            this.animationService.createConfetti();
             this.setCooldown();
           }
-          this.isSubmitting = false;
+          this.isSubmitting.set(false);
         },
-        error: (error) => {
-          this.submitSuccess = false;
-          this.submitMessage = 'Something went wrong. Please try again later.';
-          this.isSubmitting = false;
+        error: () => {
+          this.submitSuccess.set(false);
+          this.submitMessage.set('Something went wrong. Please try again later.');
+          this.isSubmitting.set(false);
         },
       });
     }

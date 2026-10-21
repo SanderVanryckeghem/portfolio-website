@@ -15,7 +15,7 @@ export class ThemeService {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
         <rect width="32" height="32" fill="#000000"/>
         <rect x="1" y="1" width="30" height="30" fill="none" stroke="#ffff00" stroke-width="2"/>
-        <text x="16" y="23" font-family="'VT323', 'Courier New', monospace" font-size="18" fill="#ffff00" text-anchor="middle">SV</text>
+        <text x="16" y="23" font-family="monospace" font-size="18" fill="#ffff00" text-anchor="middle">SV</text>
       </svg>
     `;
 
