@@ -52,7 +52,7 @@ export const FASTEXT: { label: string; page: number; colour: 'red' | 'green' | '
   { label: 'Contact', page: PAGE.contact, colour: 'cyan' },
 ];
 
-const HERO_TITLES = ['Mobile Developer', 'Frontend Developer', 'Full Stack Developer'];
+const HERO_TITLES = ['Frontend Developer', 'Full Stack Developer', 'Mobile Developer'];
 
 const STATS = [
   { label: 'Years Experience', value: '3+' },
