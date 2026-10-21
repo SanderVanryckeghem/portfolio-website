@@ -126,6 +126,20 @@
   color: var(--tt-cyan);
 }
 
+// Credits below everything, smaller than the remote strip.
+.credits {
+  margin-top: 1em;
+  font-family: var(--font-teletext-narrow);
+  font-size: max(12px, 0.4em);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--tt-white);
+
+  .heart {
+    color: var(--tt-red);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Phones: pages are re-wrapped to a narrower grid with larger text and scroll
 // vertically. Header row and Fastext buttons stay in reach.

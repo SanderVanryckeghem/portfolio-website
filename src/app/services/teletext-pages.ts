@@ -197,11 +197,6 @@ export class TeletextPagesService {
       band: 'blue',
       titleFg: 'yellow',
       masthead,
-      footer: row([
-        { text: MARGIN + 'Made with ' },
-        { text: '♥', fg: 'red' },
-        { text: ' using Angular' },
-      ]),
       blocks: [
         blank(),
         text(`Hi, I'm ${dev.name}`, { fg: 'yellow' }),
@@ -222,8 +217,6 @@ export class TeletextPagesService {
             ? 'Key in a 3-digit page number, or use the coloured keys below.'
             : 'Tap a topic, or use the coloured buttons below.',
         ),
-        blank(),
-        text(`© ${new Date().getFullYear()} Portfolio · All rights reserved`),
       ],
     };
   }

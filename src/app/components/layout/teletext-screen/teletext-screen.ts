@@ -45,6 +45,7 @@ export class TeletextScreenComponent {
   readonly fastext = FASTEXT;
   readonly rows = ROWS;
   readonly margin = MARGIN;
+  readonly year = new Date().getFullYear();
 
   readonly fontSize = signal(16);
   readonly narrow = signal(false);
