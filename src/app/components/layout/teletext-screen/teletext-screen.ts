@@ -24,8 +24,12 @@ const SERVICE_NAME = 'SANDERFAX';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Side gutters around the screen.
+// Space left around the screen: 16px side gutters plus room for the remote strip.
 const GUTTER = 16;
+// Target width of one character cell on phones (px). The grid gets as many
+// columns as fit at this size (20-40), so text stays large and clear.
+const MOBILE_CELL = 12;
+const REMOTE_ALLOWANCE = 88;
 
 @Component({
   selector: 'app-teletext-screen',
@@ -44,6 +48,7 @@ export class TeletextScreenComponent {
 
   readonly fontSize = signal(16);
   readonly narrow = signal(false);
+  readonly cols = signal(COLS);
   readonly now = signal(new Date());
   readonly pageInput = signal('');
 
@@ -53,10 +58,16 @@ export class TeletextScreenComponent {
     const now = this.now();
     const date = `${DAYS[now.getDay()]} ${pad(now.getDate())} ${MONTHS[now.getMonth()]}`;
     const time = `${pad(now.getHours())}:${pad(now.getMinutes())}/${pad(now.getSeconds())}`;
-    const requested = this.nav.requested().padEnd(6);
-    const service = `${SERVICE_NAME} ${this.nav.rolling()}`;
-    const gap = ' '.repeat(Math.max(1, COLS - requested.length - service.length - date.length - time.length - 1));
-    return { requested, service, gap, date, time, datetime: now.toISOString() };
+    const cols = this.cols();
+    const requested = this.nav.requested().padEnd(cols < COLS ? 5 : 6);
+    // On a narrow grid drop the date, then the service name, until the row fits.
+    let day = date + ' ';
+    let service = `${SERVICE_NAME} ${this.nav.rolling()}`;
+    const used = () => requested.length + service.length + day.length + time.length + 1;
+    if (used() > cols) day = '';
+    if (used() > cols) service = String(this.nav.rolling());
+    const gap = ' '.repeat(Math.max(1, cols - used() + 1));
+    return { requested, service, gap, date: day, time, datetime: now.toISOString() };
   });
 
   readonly titleRows = computed(() => {
@@ -70,8 +81,8 @@ export class TeletextScreenComponent {
   // The row above the Fastext bar: back / sub-page counter / next.
   readonly navRow = computed<TtRow>(() => {
     const page = this.nav.page();
-    const sub = this.nav.subIndex();
     const count = this.nav.subCount();
+    const sub = Math.min(this.nav.subIndex(), count - 1);
 
     let left: TtSpan | null = null;
     if (sub > 0) left = { text: '◄ Previous', fg: 'cyan', link: { page: page.number, sub: sub - 1 } };
@@ -84,7 +95,7 @@ export class TeletextScreenComponent {
     const middle: TtSpan | null = count > 1 ? { text: `${sub + 1}/${count}`, fg: 'white' } : null;
 
     if (!left && !right && !middle && page.footer) return page.footer;
-    return placeRow(left, middle, right);
+    return placeRow(left, middle, right, this.cols());
   });
 
   readonly navRows = computed(() => [this.navRow()]);
@@ -113,7 +124,13 @@ export class TeletextScreenComponent {
     effect(() => {
       if (this.nav.navigations() === 0) return;
       this.nav.subIndex();
-      untracked(() => setTimeout(() => this.heading()?.nativeElement.focus()));
+      untracked(() =>
+        setTimeout(() => {
+          // Phones scroll the page, so start each new page at the top.
+          if (this.narrow()) window.scrollTo({ top: 0 });
+          this.heading()?.nativeElement.focus({ preventScroll: this.narrow() });
+        }),
+      );
     });
   }
 
@@ -182,14 +199,31 @@ export class TeletextScreenComponent {
     return (node as { block: TtBlock }).block;
   }
 
-  // Scale the 40x25 screen to the full page width; the height follows and the
-  // page scrolls vertically if needed, so the grid never breaks. Landscape uses
-  // the extended (wider) font for TV proportions, portrait the normal width.
+  // Desktop: scale the 40x25 screen to fit the viewport, using the extended
+  // (wider) font for TV proportions, with whole-pixel cells where possible so
+  // mosaic graphics join up without seams.
+  // Phones (portrait, or a touch screen held sideways): re-wrap pages to as many columns as fit at a readable
+  // cell size and let the page scroll, instead of shrinking 40 columns.
   private fit(): void {
     const availW = document.documentElement.clientWidth - GUTTER * 2;
-    const narrow = availW / window.innerHeight < 1;
+    const availH = window.innerHeight - GUTTER * 2 - REMOTE_ALLOWANCE;
+    const touchLandscape =
+      window.matchMedia?.('(pointer: coarse)').matches && window.innerHeight < 600;
+    const narrow = availW / availH < 1 || touchLandscape;
+    let cols = COLS;
+    let size: number;
+    if (narrow) {
+      cols = Math.max(20, Math.min(COLS, Math.floor(availW / MOBILE_CELL)));
+      size = availW / (cols * 0.6);
+    } else {
+      const raw = Math.min(availW / 30, availH / ROWS);
+      size = Math.floor(raw);
+      if (size >= 16) size = Math.floor(size / 4) * 4;
+    }
     this.narrow.set(narrow);
-    this.fontSize.set(Math.max(8, availW / (narrow ? 24 : 30)));
+    this.cols.set(cols);
+    this.nav.columns.set(cols);
+    this.fontSize.set(Math.max(8, size));
   }
 }
 
@@ -199,7 +233,12 @@ function pad(n: number): string {
 
 // Lay out up to three spans across a 40-column row: left-aligned at column 1,
 // centred, and right-aligned to column 38.
-function placeRow(left: TtSpan | null, middle: TtSpan | null, right: TtSpan | null): TtRow {
+function placeRow(
+  left: TtSpan | null,
+  middle: TtSpan | null,
+  right: TtSpan | null,
+  cols: number,
+): TtRow {
   const spans: TtSpan[] = [{ text: MARGIN, decorative: true }];
   let col = 1;
   const moveTo = (target: number) => {
@@ -211,12 +250,12 @@ function placeRow(left: TtSpan | null, middle: TtSpan | null, right: TtSpan | nu
     col += left.text.length;
   }
   if (middle) {
-    moveTo(Math.floor((COLS - middle.text.length) / 2));
+    moveTo(Math.floor((cols - middle.text.length) / 2));
     spans.push(middle);
     col += middle.text.length;
   }
   if (right) {
-    moveTo(COLS - 1 - right.text.length);
+    moveTo(cols - 1 - right.text.length);
     spans.push(right);
   }
   return { spans };

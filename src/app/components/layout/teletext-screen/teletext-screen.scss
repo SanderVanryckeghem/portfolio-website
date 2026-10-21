@@ -125,3 +125,72 @@
   text-align: center;
   color: var(--tt-cyan);
 }
+
+// ---------------------------------------------------------------------------
+// Phones: pages are re-wrapped to a narrower grid with larger text and scroll
+// vertically. Header row and Fastext buttons stay in reach.
+
+.tv.narrow {
+  justify-content: flex-start;
+  padding: 0 16px;
+}
+
+.screen.narrow {
+  height: auto;
+  padding-bottom: 1em;
+
+  .header-row {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 2em;
+    padding-top: 0.5em;
+  }
+
+  // Room to tap: links get extra height without moving the character grid.
+  ::ng-deep .tt-link {
+    display: block;
+    padding-block: 0.35em;
+  }
+
+  ::ng-deep a.tt-s {
+    padding-block: 0.5em;
+  }
+
+  .page > nav ::ng-deep .tt-row {
+    height: 3em;
+    padding-top: 1em;
+  }
+}
+
+.fastext-touch {
+  position: sticky;
+  top: calc(var(--row) * 2);
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 0.5em;
+  background: var(--tt-black);
+  font-family: var(--font-teletext-narrow);
+  // Small enough that "Experience" fits a quarter of the width.
+  font-size: min(1em, calc((100vw - 32px) / 26.4));
+  line-height: 1;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    background: var(--bg);
+    color: var(--tt-black);
+    text-decoration: none;
+    outline: none;
+    white-space: nowrap;
+
+    &:focus-visible,
+    &:active {
+      background: var(--tt-black);
+      color: var(--bg);
+    }
+  }
+}

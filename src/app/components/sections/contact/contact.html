@@ -2,11 +2,11 @@
      Column 0 is the margin (padding-left in contact.scss). -->
 <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="tt-form" novalidate>
   <span class="tt-row" aria-hidden="true"></span>
-  <p class="tt-row"><span class="tt-s fg-cyan">Let's build something great together</span></p>
+  <p class="tt-row tt-intro"><span class="tt-s fg-cyan">Let's build something great together</span></p>
   <span class="tt-row" aria-hidden="true"></span>
 
   @for (field of fields; track field.id) {
-    <div class="tt-row"><label class="tt-s fg-cyan" [for]="field.id">{{ field.label.padEnd(9) }}</label><input
+    <div class="tt-row tt-field"><label class="tt-s fg-cyan" [for]="field.id">{{ field.label.padEnd(9) }}</label><input
         [id]="field.id"
         [type]="field.type"
         [formControlName]="field.id"

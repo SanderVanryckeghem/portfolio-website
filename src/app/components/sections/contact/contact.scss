@@ -58,9 +58,10 @@ button {
     color: var(--tt-blue);
   }
 
+  // Still a solid block so it reads as a button; white until the form is valid.
   &:disabled {
     cursor: default;
-    background: var(--tt-black);
+    background: var(--tt-blue);
     color: var(--tt-white);
   }
 }
@@ -72,4 +73,56 @@ button {
   padding-left: 1ch;
   color: var(--fg);
   overflow: hidden;
+}
+
+// Phones: label above a full-width field, with taller fields for touch.
+:host-context(.narrow) {
+  .tt-intro {
+    height: auto;
+    white-space: normal;
+  }
+
+  .tt-field {
+    height: auto;
+
+    label {
+      display: block;
+      height: 1.4em;
+      padding-top: 0.2em;
+    }
+  }
+
+  input,
+  textarea {
+    width: calc(100% - 1ch);
+  }
+
+  input {
+    height: 1.8em;
+    padding: 0 0.5ch;
+  }
+
+  textarea {
+    height: 7em;
+    padding: 0.3em 0.5ch;
+  }
+
+  .tt-area {
+    height: auto;
+  }
+
+  button {
+    padding: 0.6em 1ch;
+  }
+
+  .tt-row:has(button) {
+    height: auto;
+  }
+
+  .tt-status {
+    width: 100%;
+    height: auto;
+    min-height: 2em;
+    padding-top: 0.5em;
+  }
 }

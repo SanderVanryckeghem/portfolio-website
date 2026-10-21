@@ -1,9 +1,19 @@
-<div class="tv" [style.font-size.px]="fontSize()">
-  <div class="screen" [class.narrow]="narrow()" [class.scanlines]="nav.scanlines()">
+<div class="tv" [class.narrow]="narrow()" [style.font-size.px]="fontSize()" [style.--row]="fontSize() + 'px'">
+  <div class="screen" [class.narrow]="narrow()" [class.scanlines]="nav.scanlines() && !narrow()" [style.width.ch]="cols()">
     <!-- Row 1: header line - requested page, service name with rolling page counter, clock -->
     <header class="tt-row header-row">
-      <span class="tt-s" [attr.aria-label]="nav.searching() ? 'Searching for page ' + nav.searching() : null">{{ header().requested }}</span><span class="tt-s" aria-hidden="true">{{ header().service }}</span><span class="tt-s tt-pad" aria-hidden="true">{{ header().gap }}</span><time class="tt-s" [attr.datetime]="header().datetime">{{ header().date }} <span class="fg-yellow">{{ header().time }}</span></time>
+      @if (narrow()) {<a class="tt-s" href="#100" aria-label="Index, page 100" (click)="goToFastext($event, 100)">{{ header().requested }}</a>} @else {<span class="tt-s" [attr.aria-label]="nav.searching() ? 'Searching for page ' + nav.searching() : null">{{ header().requested }}</span>}<span class="tt-s" aria-hidden="true">{{ header().service }}</span><span class="tt-s tt-pad" aria-hidden="true">{{ header().gap }}</span><time class="tt-s" [attr.datetime]="header().datetime">{{ header().date }}<span class="fg-yellow">{{ header().time }}</span></time>
     </header>
+
+    @if (narrow()) {
+      <!-- Phones: Fastext as four coloured buttons pinned under the header, so
+           they never cover the page text and are always in reach -->
+      <nav class="fastext-touch" aria-label="Fastext">
+        @for (key of fastext; track key.page) {
+          <a [class]="'bg-' + key.colour" [href]="'#' + key.page" [attr.aria-current]="nav.pageNumber() === key.page ? 'page' : null" (click)="goToFastext($event, key.page)">{{ key.label }}</a>
+        }
+      </nav>
+    }
 
     <main class="page" [attr.aria-busy]="nav.searching() !== null">
       <!-- Rows 2-3 (or 2-4): solid colour title band -->
@@ -13,7 +23,7 @@
         <h1 #pageHeading tabindex="-1" class="title tt-row dbl" [class]="'bg-' + nav.page().band"><span class="tt-s" [class]="'fg-' + nav.page().titleFg">{{ margin }}{{ nav.page().title }}</span><span class="sr-only">, page {{ nav.page().number }}@if (nav.subCount() > 1) {, part {{ nav.subIndex() + 1 }} of {{ nav.subCount() }}}</span></h1>
       }
 
-      <div class="content" [style.height.em]="contentRows()">
+      <div class="content" [style.height.em]="narrow() ? null : contentRows()">
         @if (nav.page().form === 'contact') {
           <app-contact />
         } @else {
@@ -51,10 +61,14 @@
     </main>
 
     <!-- Row 25: Fastext - four coloured links, also on the R G Y C keys -->
+    @if (!narrow()) {
     <nav class="tt-row fastext" aria-label="Fastext">
       <span class="tt-s tt-pad" aria-hidden="true">{{ margin }}</span>@for (key of fastext; track key.page; let last = $last) {<a class="tt-s" [class]="'fg-' + key.colour" [href]="'#' + key.page" [attr.aria-keyshortcuts]="key.colour[0].toUpperCase()" (click)="goToFastext($event, key.page)">{{ key.label }}</a>@if (!last) {<span class="tt-s tt-pad" aria-hidden="true">{{ fastextGaps() }}</span>}}
     </nav>
+    }
   </div>
+
+  @if (!narrow()) {
 
   <!-- Outside the set: a minimal remote for touch screens and discoverability -->
   <div class="remote">
@@ -76,4 +90,5 @@
     <button type="button" (click)="nav.toggleScanlines()" [attr.aria-pressed]="nav.scanlines()">Scanlines {{ nav.scanlines() ? 'on' : 'off' }}</button>
     <p class="remote-hint">Type 3 digits for a page. R G Y C = coloured keys. &#x25C4; &#x25BA; = sub-pages.</p>
   </div>
+  }
 </div>

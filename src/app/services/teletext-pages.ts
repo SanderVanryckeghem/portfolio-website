@@ -9,8 +9,11 @@ import { Certificate } from '../models/certificate.model';
 import { Technology, TechCategory } from '../models/technology.model';
 import { TtBlock, TtPage, TtPageSource, TtTarget } from '../models/teletext.model';
 import {
+  COLS,
   MARGIN,
   blank,
+  gridCols,
+  withColumns,
   bullet,
   columns,
   contentCapacity,
@@ -62,9 +65,18 @@ const SERVICES = ['Web', 'Mobile', 'Frontend', 'Fullstack'];
 
 const CV: TtTarget = { action: 'cv' };
 
+interface PortfolioData {
+  developer: Developer;
+  projects: Project[];
+  technologies: Technology[];
+  experiences: Experience[];
+  education: Education[];
+  certificates: Certificate[];
+}
+
 /**
- * Turns the portfolio content into numbered teletext pages, split into
- * 40x25 sub-pages. All copy comes from PortfolioService or the constants
+ * Turns the portfolio content into numbered teletext pages: 40x25 sub-pages
+ * on desktop, or a narrower continuous grid on phones. All copy comes from PortfolioService or the constants
  * above - this service only decides where it goes on the grid.
  */
 @Injectable({
@@ -73,7 +85,9 @@ const CV: TtTarget = { action: 'cv' };
 export class TeletextPagesService {
   private readonly portfolioService = inject(PortfolioService);
 
-  readonly pages = signal<Map<number, TtPage>>(new Map());
+  private readonly data = signal<PortfolioData | null>(null);
+  // Composed pages per grid width (40 on desktop, narrower on phones).
+  private readonly cache = new Map<number, Map<number, TtPage>>();
 
   constructor() {
     combineLatest({
@@ -84,46 +98,67 @@ export class TeletextPagesService {
       education: this.portfolioService.getEducation(),
       certificates: this.portfolioService.getCertificates(),
     }).subscribe((data) => {
-      const sources = [
-        this.indexPage(data.developer),
-        ...this.projectPages(data.projects),
-        ...this.experiencePages(data.experiences),
-        this.educationPage(data.education),
-        this.certificatesPage(data.certificates),
-        this.aboutPage(data.developer),
-        this.technologiesPage(data.technologies),
-        this.contactPage(data.developer),
-        this.messagePage(),
-      ];
-      this.pages.set(new Map(sources.map((source) => [source.number, compose(source)])));
+      this.cache.clear();
+      this.data.set(data);
     });
   }
 
-  get(number: number): TtPage | undefined {
-    return this.pages().get(number);
+  get(number: number, cols: number = COLS): TtPage | undefined {
+    return this.pagesFor(cols).get(number);
   }
 
-  notFound(number: number): TtPage {
-    return compose({
-      number,
-      title: 'Page not found',
-      band: 'red',
-      titleFg: 'white',
-      parent: PAGE.index,
-      blocks: [
-        blank(),
-        text(`Page ${number} is not in this service.`),
-        blank(),
-        leader('Index', { page: PAGE.index }, String(PAGE.index)),
-      ],
-    });
+  notFound(number: number, cols: number = COLS): TtPage {
+    return withColumns(cols, () =>
+      compose(
+        {
+          number,
+          title: 'Page not found',
+          band: 'red',
+          titleFg: 'white',
+          parent: PAGE.index,
+          blocks: [
+            blank(),
+            text(`Page ${number} is not in this service.`),
+            blank(),
+            leader('Index', { page: PAGE.index }, String(PAGE.index)),
+          ],
+        },
+        cols,
+      ),
+    );
+  }
+
+  private pagesFor(cols: number): Map<number, TtPage> {
+    const data = this.data();
+    if (!data) return new Map();
+    let pages = this.cache.get(cols);
+    if (!pages) {
+      pages = withColumns(cols, () => {
+        const sources = [
+          this.indexPage(data.developer),
+          ...this.projectPages(data.projects),
+          ...this.experiencePages(data.experiences),
+          this.educationPage(data.education),
+          this.certificatesPage(data.certificates),
+          this.aboutPage(data.developer),
+          this.technologiesPage(data.technologies),
+          this.contactPage(data.developer),
+          this.messagePage(),
+        ];
+        return new Map(sources.map((source) => [source.number, compose(source, cols)]));
+      });
+      this.cache.set(cols, pages);
+    }
+    return pages;
   }
 
   // P100 ---------------------------------------------------------------------
 
   private indexPage(dev: Developer): TtPageSource {
     const logo = mosaicWord('SV');
-    const masthead: TtBlock = {
+    // Drop the mosaic logo when the name wouldn't fit beside it (narrow phones).
+    const showLogo = MARGIN.length + logo[0].length + 2 + dev.name.length <= gridCols();
+    const masthead: TtBlock = showLogo ? {
       tag: 'div',
       rows: [
         row(
@@ -145,6 +180,12 @@ export class TeletextPagesService {
           ],
           { bg: 'blue' },
         ),
+      ],
+    } : {
+      tag: 'div',
+      rows: [
+        row([{ text: MARGIN + dev.name, fg: 'yellow' }], { bg: 'blue', double: true }),
+        row([{ text: MARGIN + dev.title, fg: 'cyan' }], { bg: 'blue' }),
       ],
     };
 
@@ -176,7 +217,11 @@ export class TeletextPagesService {
         entry('Send Message', PAGE.message),
         leader('Download CV', CV, 'PDF'),
         blank(),
-        text('Key in a 3-digit page number, or use the coloured keys below.'),
+        text(
+          gridCols() === COLS
+            ? 'Key in a 3-digit page number, or use the coloured keys below.'
+            : 'Tap a topic, or use the coloured buttons below.',
+        ),
         blank(),
         text(`© ${new Date().getFullYear()} Portfolio · All rights reserved`),
       ],
@@ -504,10 +549,13 @@ export class TeletextPagesService {
   }
 }
 
-function compose(source: TtPageSource): TtPage {
+// Desktop pages are split into 40x25 sub-pages; on a phone grid the page is
+// one continuous scroll, so there's nothing to flip through.
+function compose(source: TtPageSource, cols: number): TtPage {
   const { blocks, ...meta } = source;
   const titleRows = source.masthead ? blockHeight(source.masthead) : 2;
-  return { ...meta, subPages: paginate(blocks, contentCapacity(titleRows)) };
+  const capacity = cols === COLS ? contentCapacity(titleRows) : Infinity;
+  return { ...meta, subPages: paginate(blocks, capacity) };
 }
 
 // Several short paragraphs that read as one item (and never split).

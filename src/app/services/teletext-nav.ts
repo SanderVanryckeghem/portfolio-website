@@ -1,5 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { PAGE, TeletextPagesService } from './teletext-pages';
+import { COLS } from '../utils/teletext-layout';
 
 // Old single-page section anchors keep working as links into the new pages.
 const LEGACY_ANCHORS: Record<string, number> = {
@@ -47,11 +48,19 @@ export class TeletextNavService {
   // Bumped on every user-initiated page change so the screen can move focus.
   readonly navigations = signal(0);
 
+  // Width of the character grid: 40 on desktop, fewer (larger text) on phones.
+  readonly columns = signal(COLS);
+
   readonly page = computed(
-    () => this.pagesService.get(this.pageNumber()) ?? this.pagesService.notFound(this.pageNumber()),
+    () =>
+      this.pagesService.get(this.pageNumber(), this.columns()) ??
+      this.pagesService.notFound(this.pageNumber(), this.columns()),
   );
   readonly subCount = computed(() => this.page().subPages.length);
-  readonly subPage = computed(() => this.page().subPages[this.subIndex()] ?? []);
+  readonly subPage = computed(() => {
+    const subPages = this.page().subPages;
+    return subPages[Math.min(this.subIndex(), subPages.length - 1)] ?? [];
+  });
 
   readonly requested = computed(() => {
     const entry = this.entry();

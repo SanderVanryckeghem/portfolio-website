@@ -56,13 +56,22 @@ $tt-colours: black, red, green, yellow, blue, magenta, cyan, white;
   outline: none;
 }
 
-// Keyboard focus and hover: inverse video block cursor.
+// Keyboard focus, hover and touch press: inverse video block cursor.
+// Hover only on devices that really hover, so a tapped link doesn't stay inverted.
 .tt-link:focus-visible .tt-s:not(.tt-pad),
-.tt-link:hover .tt-s:not(.tt-pad),
+.tt-link:active .tt-s:not(.tt-pad),
 a.tt-s:focus-visible,
-a.tt-s:hover {
+a.tt-s:active {
   color: var(--bg);
   background: var(--fg);
+}
+
+@media (hover: hover) {
+  .tt-link:hover .tt-s:not(.tt-pad),
+  a.tt-s:hover {
+    color: var(--bg);
+    background: var(--fg);
+  }
 }
 
 .sr-only {

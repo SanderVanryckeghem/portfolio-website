@@ -7,7 +7,30 @@ export const ROWS = 25;
 // Column 0 is left blank (on a real set it holds the colour control code),
 // so body text runs from column 1 and is at most 38 characters wide.
 export const MARGIN = ' ';
-export const TEXT_WIDTH = 38;
+
+// Pages are composed for the classic 40 columns on desktop, and re-wrapped to
+// a narrower grid on phones so the text can be larger. The builders below
+// read the active width; use withColumns() to compose for another width.
+let activeCols = COLS;
+
+export function gridCols(): number {
+  return activeCols;
+}
+
+// Usable text width: everything except the margin column and the last column.
+export function textWidth(): number {
+  return activeCols - 2;
+}
+
+export function withColumns<T>(cols: number, build: () => T): T {
+  const previous = activeCols;
+  activeCols = cols;
+  try {
+    return build();
+  } finally {
+    activeCols = previous;
+  }
+}
 
 // Rows available for page content: everything between the title band and the
 // navigation row above the Fastext bar (rows 1 and 25 are the header and Fastext).
@@ -74,7 +97,7 @@ export function text(content: string, opts: TextOpts = {}): TtBlock {
     tag: opts.tag ?? 'p',
     link: opts.link,
     keepTogether: opts.keepTogether,
-    rows: wrap(content, TEXT_WIDTH - indent).map((line) =>
+    rows: wrap(content, textWidth() - indent).map((line) =>
       row([{ text: pad, decorative: true }, { text: line, fg: opts.fg }]),
     ),
   };
@@ -85,13 +108,13 @@ export function heading(content: string, fg: TtColour = 'yellow'): TtBlock {
   return {
     tag: 'h2',
     keepWithNext: true,
-    rows: wrap(content, TEXT_WIDTH).map((line) => row([{ text: MARGIN + line, fg }])),
+    rows: wrap(content, textWidth()).map((line) => row([{ text: MARGIN + line, fg }])),
   };
 }
 
 // Bulleted list item with a hanging indent.
 export function bullet(content: string, fg: TtColour = 'white', bulletFg: TtColour = 'cyan'): TtBlock {
-  const lines = wrap(content, TEXT_WIDTH - 2);
+  const lines = wrap(content, textWidth() - 2);
   return {
     tag: 'li',
     keepTogether: true,
@@ -123,7 +146,7 @@ export function leader(label: string, target: TtTarget, right: string, opts: Lea
   const indent = opts.indent ?? 0;
   const markerWidth = opts.marker ? opts.marker.text.length : 0;
   const pad = MARGIN + ' '.repeat(indent);
-  const labelWidth = TEXT_WIDTH - indent - markerWidth - right.length - 3;
+  const labelWidth = textWidth() - indent - markerWidth - right.length - 3;
   const lines = wrap(label, labelWidth);
 
   const rows = lines.map((line, i) => {
@@ -131,7 +154,7 @@ export function leader(label: string, target: TtTarget, right: string, opts: Lea
     if (opts.marker) spans.push(i === 0 ? opts.marker : { text: ' '.repeat(markerWidth) });
     spans.push({ text: line.trimEnd(), fg: opts.fg ?? 'white' });
     if (i === lines.length - 1) {
-      const dots = TEXT_WIDTH - indent - markerWidth - line.trimEnd().length - right.length - 2;
+      const dots = textWidth() - indent - markerWidth - line.trimEnd().length - right.length - 2;
       spans.push({ text: ' ' + '.'.repeat(dots) + ' ', fg: opts.fg ?? 'white', decorative: true });
       spans.push({ text: right, fg: opts.rightFg ?? 'cyan' });
     } else {
@@ -141,7 +164,7 @@ export function leader(label: string, target: TtTarget, right: string, opts: Lea
   });
 
   if (opts.sub) {
-    for (const line of wrap(opts.sub, TEXT_WIDTH - indent - markerWidth - 2)) {
+    for (const line of wrap(opts.sub, textWidth() - indent - markerWidth - 2)) {
       rows.push(
         row([
           { text: pad + ' '.repeat(markerWidth + 2), decorative: true },
@@ -163,7 +186,25 @@ export function keyValue(
   const labelWidth = opts.labelWidth ?? 9;
   // Values may run into the last column (39) so an address like the 30-character
   // email fits on one row next to a 9-column label.
-  const lines = wrap(value, COLS - MARGIN.length - labelWidth);
+  const besideWidth = gridCols() - MARGIN.length - labelWidth;
+
+  // On a narrow (phone) grid, put a value that won't fit beside its label on
+  // the rows below it instead of chopping it into tiny pieces.
+  if (gridCols() < COLS && value.length > besideWidth) {
+    return {
+      tag: 'p',
+      link: opts.link,
+      keepTogether: true,
+      rows: [
+        row([{ text: MARGIN, decorative: true }, { text: label + ' ', fg: opts.labelFg ?? 'cyan' }]),
+        ...wrap(value, gridCols() - MARGIN.length).map((line) =>
+          row([{ text: MARGIN, decorative: true }, { text: line, fg: opts.valueFg ?? 'white' }]),
+        ),
+      ],
+    };
+  }
+
+  const lines = wrap(value, besideWidth);
   return {
     tag: 'p',
     link: opts.link,
@@ -190,7 +231,7 @@ export function columns(
   longest = Math.max(...items.map((item) => item.length)),
 ): TtBlock {
   const width = longest + 1;
-  while (perRow > 1 && (perRow - 1) * width + longest > TEXT_WIDTH) perRow--;
+  while (perRow > 1 && (perRow - 1) * width + longest > textWidth()) perRow--;
   const rows: TtRow[] = [];
   for (let i = 0; i < items.length; i += perRow) {
     const cells = items.slice(i, i + perRow);
