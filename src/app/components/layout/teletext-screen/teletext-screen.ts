@@ -57,7 +57,7 @@ export class TeletextScreenComponent {
   readonly header = computed(() => {
     const now = this.now();
     const date = `${DAYS[now.getDay()]} ${pad(now.getDate())} ${MONTHS[now.getMonth()]}`;
-    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}/${pad(now.getSeconds())}`;
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     const cols = this.cols();
     const requested = this.nav.requested().padEnd(cols < COLS ? 5 : 6);
     // On a narrow grid drop the date, then the service name, until the row fits.
