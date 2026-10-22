@@ -9,6 +9,14 @@ export interface Developer {
   phone?: string;
   location?: string;
   social: SocialLinks;
+  employer?: Employer;
+}
+
+export interface Employer {
+  name: string;
+  kind: string;
+  description: string;
+  since: Date;
 }
 
 export interface SocialLinks {

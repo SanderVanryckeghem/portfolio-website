@@ -11,7 +11,7 @@
     >{{ block.text }}</p>
   } @else if (block.kind === 'contents') {
     <ul class="contents" [style.margin-top.em]="block.gap || null">
-      @for (entry of block.entries; track entry.label) {
+      @for (entry of block.entries; track $index) {
         <li>
           <a class="entry" [appTtLink]="entry.target">
             <span class="leader">

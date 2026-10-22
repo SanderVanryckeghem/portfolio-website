@@ -40,6 +40,13 @@ export class PortfolioService {
       linkedin: 'https://www.linkedin.com/in/sander-vanryckeghem-b29042b9/',
       twitter: undefined,
     },
+    employer: {
+      name: 'Axxes NV',
+      kind: 'IT consultancy',
+      description:
+        'Axxes is a Belgian IT consultancy. As a consultant I join client teams to build their software, between assignments I work on internal Axxes projects.',
+      since: new Date('2023-02-01'),
+    },
   };
 
   private projects: Project[] = [
@@ -428,7 +435,8 @@ export class PortfolioService {
   private experiences: Experience[] = [
     {
       id: 9,
-      company: 'Axxes - ACEG',
+      company: 'Axxes NV',
+      client: 'ACEG',
       position: 'Full-stack Developer',
       startDate: new Date('2026-05-01'),
       endDate: new Date('2026-08-01'),
@@ -448,7 +456,8 @@ export class PortfolioService {
     },
     {
       id: 8,
-      company: 'Axxes - Duodecim',
+      company: 'Axxes NV',
+      client: 'Duodecim',
       position: 'Full-stack Developer',
       startDate: new Date('2026-04-01'),
       endDate: new Date(Date.now()),
@@ -479,7 +488,8 @@ export class PortfolioService {
     },
     {
       id: 1,
-      company: 'Axxes - Silverfin',
+      company: 'Axxes NV',
+      client: 'Silverfin',
       position: 'BSO Solution Developer UK-Unit',
       startDate: new Date('2025-05-01'),
       endDate: new Date('2025-12-31'),
@@ -498,7 +508,8 @@ export class PortfolioService {
     },
     {
       id: 2,
-      company: 'Axxes - Silverfin',
+      company: 'Axxes NV',
+      client: 'Silverfin',
       position: 'BSO Solution Developer Platform-Unit',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2025-05-01'),
@@ -517,7 +528,8 @@ export class PortfolioService {
     },
     {
       id: 3,
-      company: 'Axxes - Silverfin',
+      company: 'Axxes NV',
+      client: 'Silverfin',
       position: 'BSO Solution Developer BE-Unit',
       startDate: new Date('2024-01-01'),
       endDate: new Date('2024-07-01'),
@@ -536,7 +548,8 @@ export class PortfolioService {
     },
     {
       id: 4,
-      company: 'Axxes',
+      company: 'Axxes NV',
+      project: 'Year In Review app',
       position: 'Mobile Developer',
       startDate: new Date('2023-09-01'),
       endDate: new Date('2023-12-01'),
@@ -555,7 +568,8 @@ export class PortfolioService {
     },
     {
       id: 5,
-      company: 'Axxes - Java Traineeship',
+      company: 'Axxes NV',
+      project: 'CarpoolTool (Java Traineeship)',
       position: 'Fullstack Developer',
       startDate: new Date('2023-08-01'),
       endDate: new Date('2023-09-01'),
@@ -579,7 +593,8 @@ export class PortfolioService {
     },
     {
       id: 6,
-      company: 'Axxes',
+      company: 'Axxes NV',
+      project: 'Year In Review app',
       position: 'Intern - Front-end Developer',
       startDate: new Date('2023-02-01'),
       endDate: new Date('2023-06-01'),
@@ -598,7 +613,8 @@ export class PortfolioService {
     },
     {
       id: 7,
-      company: 'Axxes',
+      company: 'Axxes NV',
+      project: 'Axxes portal',
       position: 'Angular Developer',
       startDate: new Date('2026-01-01'),
       endDate: new Date('2026-02-01'),

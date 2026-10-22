@@ -118,7 +118,13 @@ export class CVGeneratorService {
 
     let contentY = this.addContentHeader(doc, data.developer, colors, avatarBase64);
     contentY = this.addContentProfile(doc, data.developer, contentY, colors);
-    const { createdNewPage } = this.addContentExperience(doc, data.experiences, contentY, colors);
+    const { createdNewPage } = this.addContentExperience(
+      doc,
+      data.experiences,
+      data.developer,
+      contentY,
+      colors,
+    );
 
     // Page for Certificates and Projects
     doc.addPage();
@@ -444,6 +450,7 @@ export class CVGeneratorService {
   private addContentExperience(
     doc: jsPDF,
     experiences: Experience[],
+    developer: Developer,
     startY: number,
     colors: CVColors,
   ): { y: number; createdNewPage: boolean } {
@@ -452,6 +459,29 @@ export class CVGeneratorService {
     const maxWidth = this.CONTENT_WIDTH - 10;
 
     y = this.addContentSectionTitle(doc, 'EXPERIENCE', x, y, colors);
+
+    // Employer: every role below is a client assignment or internal project for it
+    if (developer.employer) {
+      const { name, kind, description, since } = developer.employer;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(...colors.primary);
+      doc.text(name, x, y);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...colors.gray);
+      doc.text(`${this.formatDateShort(since)} – Present`, x + maxWidth - 30, y);
+      y += 5;
+
+      doc.text(kind, x, y);
+      y += 5;
+
+      doc.setTextColor(...colors.dark);
+      const employerLines = doc.splitTextToSize(description, maxWidth);
+      doc.text(employerLines, x, y);
+      y += employerLines.length * 4 + 6;
+    }
 
     // Sort experiences by start date (newest first)
     const sortedExp = [...experiences].sort(
@@ -491,12 +521,20 @@ export class CVGeneratorService {
       doc.text(dateStr, x + maxWidth - 30, y);
       y += 5;
 
-      // Company
-      doc.setTextColor(...colors.dark);
-      doc.text(exp.company, x, y);
+      // Client, or the employer's internal project
+      const placement = exp.client
+        ? `Client: ${exp.client}`
+        : `Internal project${exp.project ? `: ${exp.project}` : ''}`;
+      doc.setTextColor(...colors.primary);
+      doc.text(
+        exp.company === developer.employer?.name ? placement : `${exp.company} · ${placement}`,
+        x,
+        y,
+      );
       y += 6;
 
       // Description
+      doc.setTextColor(...colors.dark);
       doc.setFontSize(9);
       const descLines = doc.splitTextToSize(exp.description, maxWidth);
       doc.text(descLines, x, y);

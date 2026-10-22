@@ -76,7 +76,7 @@ export class TeletextPagesService {
     const pages = [
       indexPage(data.developer),
       ...projectPages(data.projects),
-      ...experiencePages(data.experiences),
+      ...experiencePages(data.experiences, data.developer),
       educationPage(data.education),
       certificatesPage(data.certificates),
       aboutPage(data.developer),
@@ -138,7 +138,11 @@ function indexPage(dev: Developer): TtPage {
     title: dev.name,
     band: 'blue',
     titleColour: 'yellow',
-    masthead: { name: dev.name, title: dev.title },
+    // The job titles follow below, so the masthead names the employer.
+    masthead: {
+      name: dev.name,
+      title: dev.employer ? `Consultant at ${dev.employer.name}` : dev.title,
+    },
     blocks: [
       text(`Hi, I'm ${dev.name}`, 'yellow'),
       text(HERO_TITLES.join(', '), 'cyan'),
@@ -245,29 +249,58 @@ function projectPages(projects: Project[]): TtPage[] {
 
 // P300 -----------------------------------------------------------------------
 
-function experiencePages(experiences: Experience[]): TtPage[] {
-  const numbered = experiences.map((exp, i) => ({ exp, page: PAGE.experience + 1 + i }));
+function experiencePages(experiences: Experience[], dev: Developer): TtPage[] {
+  // Client assignments first, then internal projects; each newest first.
+  const ordered = [
+    ...experiences.filter((exp) => exp.client),
+    ...experiences.filter((exp) => !exp.client),
+  ];
+  const numbered = ordered.map((exp, i) => ({ exp, page: PAGE.experience + 1 + i }));
+  const year = (exp: Experience) => new Date(exp.startDate).getFullYear();
 
-  const index: TtBlock[] = [
-    text('My professional journey', 'cyan'),
-    heading('Work Experience', 1),
+  const index: TtBlock[] = [text('My professional journey', 'cyan')];
+  if (dev.employer) {
+    const { name, kind, description, since } = dev.employer;
+    index.push(
+      heading(name, 1),
+      text(`${kind} · ${new Date(since).getFullYear()} - Present`, 'cyan'),
+      text(description),
+    );
+  }
+  index.push(
+    heading('Client assignments', 1),
     contents(
-      numbered.map(({ exp, page }) =>
-        pageEntry(exp.position, page, {
-          sub: `${exp.company}, ${new Date(exp.startDate).getFullYear()}`,
-        }),
-      ),
+      numbered
+        .filter(({ exp }) => exp.client)
+        .map(({ exp, page }) =>
+          pageEntry(exp.client!, page, { sub: `${exp.position}, ${year(exp)}` }),
+        ),
+    ),
+    heading(dev.employer ? `Internal ${dev.employer.name} projects` : 'Internal projects', 1),
+    contents(
+      numbered
+        .filter(({ exp }) => !exp.client)
+        .map(({ exp, page }) =>
+          pageEntry(exp.position, page, {
+            sub: [exp.project, year(exp)].filter(Boolean).join(', '),
+          }),
+        ),
     ),
     contents([pageEntry('Education', PAGE.education), pageEntry('Certificates', PAGE.certificates)], 1),
-  ];
+  );
 
   const detail = numbered.map(({ exp, page }, i): TtPage => {
     const period = `${formatMonthYear(exp.startDate)} - ${
       exp.current ? 'Present' : formatMonthYear(exp.endDate!)
     }`;
-    const where = [exp.type, exp.location].filter(Boolean).join(' · ');
-    const blocks: TtBlock[] = [heading(exp.position), text(exp.company, 'cyan'), text(period)];
-    if (where) blocks.push(text(where));
+    const facts: TtDetail[] = [{ label: 'Employer', value: exp.company }];
+    if (exp.client) facts.push({ label: 'Client', value: exp.client });
+    else facts.push({ label: 'Project', value: exp.project ?? 'Internal' });
+    facts.push({ label: 'Period', value: period });
+    if (exp.type) facts.push({ label: 'Type', value: exp.type });
+    if (exp.location) facts.push({ label: 'Location', value: exp.location });
+
+    const blocks: TtBlock[] = [heading(exp.position), details(facts)];
     blocks.push(text(exp.description, undefined, 1));
     if (exp.achievements?.length) {
       blocks.push(heading('Achievements', 1), { kind: 'bullets', items: exp.achievements });
@@ -424,8 +457,10 @@ function contactPage(dev: Developer): TtPage {
       details(reach, 1),
       heading('Follow me on social media', 1),
       details(social),
-      text('Working for Axxes IT Consultancy.', undefined, 1),
-      text('Response time within 24 hours.'),
+      ...(dev.employer
+        ? [text(`Consultant at ${dev.employer.name} (${dev.employer.kind}).`, undefined, 1)]
+        : []),
+      text('Response time within 24 hours.', undefined, dev.employer ? 0 : 1),
       contents([pageEntry('Send Message', PAGE.message), CV_ENTRY], 1),
     ],
   };
