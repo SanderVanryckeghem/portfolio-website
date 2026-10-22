@@ -1,8 +1,29 @@
-// Form controls sit on the teletext grid: 1 row tall, widths in character cells.
+// The message form fills the 20 content rows of the screen: every field,
+// error and status line is a whole number of rows (em) high.
 // Fields are white on blue; focus inverts them (blue on white).
 
-.tt-row {
-  padding-left: 1ch;
+:host {
+  display: block;
+}
+
+.message-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1em 1ch 0;
+}
+
+.intro {
+  margin-bottom: 1em;
+}
+
+.field {
+  display: flex;
+  align-self: stretch;
+
+  label {
+    flex: 0 0 9ch;
+  }
 }
 
 input,
@@ -13,25 +34,20 @@ button {
   border: 0;
   border-radius: 0;
   padding: 0;
-  margin: 0;
-  vertical-align: top;
   background: var(--tt-blue);
   color: var(--tt-white);
   caret-color: var(--tt-yellow);
 }
 
 input {
-  width: 29ch;
+  flex: 1;
   height: 1em;
 }
 
 textarea {
-  display: inline-block;
-  width: 38ch;
+  align-self: stretch;
   height: 5em;
   resize: none;
-  overflow-y: auto;
-  white-space: pre-wrap;
   scrollbar-color: var(--tt-yellow) var(--tt-blue);
 }
 
@@ -42,11 +58,12 @@ textarea:focus {
   color: var(--tt-blue);
 }
 
-.tt-area {
-  height: 5em;
+.error {
+  min-height: 1em;
 }
 
 button {
+  margin-top: 1em;
   padding: 0 1ch;
   color: var(--tt-yellow);
   cursor: pointer;
@@ -61,43 +78,28 @@ button {
   // Still a solid block so it reads as a button; white until the form is valid.
   &:disabled {
     cursor: default;
-    background: var(--tt-blue);
     color: var(--tt-white);
   }
 }
 
-// Two rows for the success/error message, wrapped within the 38-column text area.
-.tt-status {
-  height: 2em;
-  width: 39ch;
-  padding-left: 1ch;
-  color: var(--fg);
-  overflow: hidden;
+// Two rows for the success/error message.
+.status {
+  min-height: 2em;
 }
 
 // Phones: label above a full-width field, with taller fields for touch.
 :host-context(.narrow) {
-  .tt-intro {
-    height: auto;
-    white-space: normal;
-  }
-
-  .tt-field {
-    height: auto;
+  .field {
+    flex-direction: column;
 
     label {
-      display: block;
-      height: 1.4em;
-      padding-top: 0.2em;
+      flex: none;
+      padding-block: 0.2em;
     }
   }
 
-  input,
-  textarea {
-    width: calc(100% - 1ch);
-  }
-
   input {
+    flex: none;
     height: 1.8em;
     padding: 0 0.5ch;
   }
@@ -107,22 +109,11 @@ button {
     padding: 0.3em 0.5ch;
   }
 
-  .tt-area {
-    height: auto;
-  }
-
   button {
     padding: 0.6em 1ch;
   }
 
-  .tt-row:has(button) {
-    height: auto;
-  }
-
-  .tt-status {
-    width: 100%;
-    height: auto;
-    min-height: 2em;
+  .status {
     padding-top: 0.5em;
   }
 }

@@ -1,0 +1,75 @@
+@for (block of blocks(); track $index) {
+  @if (block.kind === 'heading') {
+    <h2 class="fg-yellow" [style.margin-top.em]="block.gap || null">{{ block.text }}</h2>
+  } @else if (block.kind === 'text') {
+    <p
+      [class]="'fg-' + (block.colour ?? 'white')"
+      [class.centre]="block.centre"
+      [class.desktop-only]="block.only === 'desktop'"
+      [class.touch-only]="block.only === 'touch'"
+      [style.margin-top.em]="block.gap || null"
+    >{{ block.text }}</p>
+  } @else if (block.kind === 'contents') {
+    <ul class="contents" [style.margin-top.em]="block.gap || null">
+      @for (entry of block.entries; track entry.label) {
+        <li>
+          <a class="entry" [appTtLink]="entry.target">
+            <span class="leader">
+              @if (entry.marker) {
+                <span class="marker fg-yellow">{{ entry.marker }}</span>
+              }
+              <span class="label"><span>{{ entry.label }}</span></span>
+              <span class="dots" aria-hidden="true">{{ dots }}</span>
+              <span class="sr-only">, page </span>
+              <span class="number fg-cyan">{{ entry.right }}</span>
+            </span>
+            @if (entry.sub) {
+              <span class="sub fg-cyan">{{ entry.sub }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  } @else if (block.kind === 'bullets') {
+    <ul class="bullets" [style.margin-top.em]="block.gap || null">
+      @for (item of block.items; track $index) {
+        <li>{{ item }}</li>
+      }
+    </ul>
+  } @else if (block.kind === 'details') {
+    <dl
+      class="details"
+      [style.--label-width]="(block.labelWidth ?? 9) + 'ch'"
+      [style.margin-top.em]="block.gap || null"
+    >
+      @for (row of block.rows; track row.label) {
+        <div>
+          <dt [class]="'fg-' + (block.labelColour ?? 'cyan')">{{ row.label }}</dt>
+          <dd>
+            @if (row.link; as link) {
+              <a [appTtLink]="link">@for (part of breakAfterSlashes(row.value); track $index) {{{ part }}<wbr />}@if (isExternal(link)) {<span class="sr-only"> (opens in a new tab)</span>}</a>
+            } @else {
+              {{ row.value }}
+            }
+          </dd>
+        </div>
+      }
+    </dl>
+  } @else if (block.kind === 'columns') {
+    <ul class="columns" [style.--cell-width]="block.width + 'ch'" [style.margin-top.em]="block.gap || null">
+      @for (item of block.items; track item) {
+        <li>{{ item }}</li>
+      }
+    </ul>
+  } @else if (block.kind === 'cards') {
+    <ul class="cards" [style.margin-top.em]="block.gap || null">
+      @for (card of block.cards; track $index) {
+        <li>
+          @for (line of card; track $index) {
+            <p [class]="'fg-' + (line.colour ?? 'white')">{{ line.text }}</p>
+          }
+        </li>
+      }
+    </ul>
+  }
+}

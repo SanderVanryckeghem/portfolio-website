@@ -1,0 +1,151 @@
+// Page content on the teletext grid: every line is 1em tall and every
+// character 1ch wide, so spacing is always whole rows (em) and columns (ch).
+
+:host {
+  display: block;
+}
+
+// Column 0 stays empty (on a real set it holds the colour code), and the last
+// column is kept clear, so text runs over the middle 38 columns.
+:host > * {
+  margin-inline: 1ch;
+}
+
+// Values may run into the last column, so a 30-character email fits beside its label.
+:host > .details {
+  margin-right: 0;
+}
+
+// Headings and list items never get split over two sub-pages, and a heading
+// never ends a sub-page on its own.
+h2 {
+  break-after: avoid;
+}
+
+li,
+.details > div {
+  break-inside: avoid;
+}
+
+.centre {
+  text-align: center;
+}
+
+.touch-only {
+  display: none;
+}
+
+:host-context(.narrow) {
+  .desktop-only {
+    display: none;
+  }
+
+  .touch-only {
+    display: block;
+  }
+}
+
+// Contents entry: label, dotted leader, page number. The dots run along the
+// bottom line behind everything else; the label text, marker and number have
+// a solid background that hides the dots under them. That way the leader
+// follows the last line of a label that wraps.
+.entry {
+  --entry-bg: var(--bg);
+
+  display: block;
+
+  &:focus-visible,
+  &:active {
+    --entry-bg: var(--fg);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      --entry-bg: var(--fg);
+    }
+  }
+}
+
+.leader {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+}
+
+.marker {
+  flex: none;
+  align-self: stretch;
+  width: 2ch;
+  background: var(--entry-bg);
+}
+
+.label > span {
+  padding-right: 1ch;
+  background: var(--entry-bg);
+}
+
+.dots {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: -1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.number {
+  flex: none;
+  margin-left: auto;
+  padding-left: 1ch;
+  background: var(--entry-bg);
+}
+
+.sub {
+  display: block;
+  padding-left: 2ch;
+}
+
+// Achievements: a cyan bullet with a hanging indent.
+.bullets {
+  padding-left: 2ch;
+  list-style: '• ' outside;
+
+  li::marker {
+    color: var(--tt-cyan);
+  }
+}
+
+// Label column of fixed width; a value too wide to sit beside it drops below.
+.details > div {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+dt {
+  flex: 0 0 var(--label-width);
+}
+
+dd {
+  flex: 1 1 0;
+  min-width: min-content;
+  overflow-wrap: break-word;
+}
+
+// Phones: a value that doesn't fit beside its label in full gets its own line,
+// and long addresses may break anywhere rather than run off the screen.
+:host-context(.narrow) dd {
+  flex-basis: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+// Technologies: as many aligned columns as fit, one space apart.
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--cell-width));
+  column-gap: 1ch;
+}
+
+.cards li + li {
+  margin-top: 1em;
+}

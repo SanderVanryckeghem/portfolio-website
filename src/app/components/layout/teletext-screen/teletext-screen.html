@@ -1,95 +1,125 @@
-<div class="tv" [class.narrow]="narrow()" [style.font-size.px]="fontSize()" [style.--row]="fontSize() + 'px'">
-  <div class="screen" [class.narrow]="narrow()" [class.scanlines]="nav.scanlines() && !narrow()" [style.width.ch]="cols()">
-    <!-- Row 1: header line - requested page, service name with rolling page counter, clock -->
-    <header class="tt-row header-row">
-      @if (narrow()) {<a class="tt-s" href="#100" aria-label="Index, page 100" (click)="goToFastext($event, 100)">{{ header().requested }}</a>} @else {<span class="tt-s" [attr.aria-label]="nav.searching() ? 'Searching for page ' + nav.searching() : null">{{ header().requested }}</span>}<span class="tt-s" aria-hidden="true">{{ header().service }}</span><span class="tt-s tt-pad" aria-hidden="true">{{ header().gap }}</span><time class="tt-s" [attr.datetime]="header().datetime">{{ header().date }}<span class="fg-yellow">{{ header().time }}</span></time>
-    </header>
-
-    @if (narrow()) {
-      <!-- Phones: Fastext as four coloured buttons pinned under the header, so
-           they never cover the page text and are always in reach -->
-      <nav class="fastext-touch" aria-label="Fastext">
-        @for (key of fastext; track key.page) {
-          <a [class]="'bg-' + key.colour" [href]="'#' + key.page" [attr.aria-current]="nav.pageNumber() === key.page ? 'page' : null" (click)="goToFastext($event, key.page)">{{ key.label }}</a>
+<div class="tv" [class.narrow]="narrow()">
+  <div class="screen" [class.narrow]="narrow()" [class.scanlines]="nav.scanlines() && !narrow()">
+    <div class="top">
+      <!-- Header row: requested page, service name with rolling page counter, clock -->
+      <header class="header-row">
+        @if (narrow()) {
+          <a class="page-number" [appTtLink]="indexTarget" aria-label="Index, page 100">{{ nav.requested() }}</a>
+        } @else {
+          <span
+            class="page-number"
+            [attr.aria-label]="nav.searching() ? 'Searching for page ' + nav.searching() : null"
+          >{{ nav.requested() }}</span>
         }
-      </nav>
-    }
+        <span class="service" aria-hidden="true">{{ serviceName }} {{ nav.rolling() }}</span>
+        <time class="clock" [attr.datetime]="clock().iso">
+          @if (!narrow()) {
+            <span>{{ clock().date }}</span>
+          }
+          <span>{{ clock().time }}</span>
+        </time>
+      </header>
+
+      @if (narrow()) {
+        <!-- Phones: Fastext as four coloured buttons under the header, so they
+             never cover the page text and are always in reach -->
+        <nav class="fastext-touch" aria-label="Fastext">
+          @for (key of fastext; track key.page) {
+            <a
+              [class]="'bg-' + key.colour"
+              [appTtLink]="key.target"
+              [attr.aria-current]="nav.pageNumber() === key.page ? 'page' : null"
+            >{{ key.label }}</a>
+          }
+        </nav>
+      }
+    </div>
 
     <main class="page" [attr.aria-busy]="nav.searching() !== null">
-      <!-- Rows 2-3 (or 2-4): solid colour title band -->
       @if (nav.page().masthead; as masthead) {
-        <h1 appTtRows #pageHeading tabindex="-1" class="title" [rows]="masthead.rows"></h1>
+        <h1 #pageHeading tabindex="-1" class="title masthead bg-blue">
+          <span class="logo" aria-hidden="true">
+            @for (line of logo; track $index) {
+              <span>{{ line }}</span>
+            }
+          </span>
+          <span class="masthead-text">
+            <span class="double fg-yellow"><span>{{ masthead.name }}</span></span>
+            <span class="fg-cyan">{{ masthead.title }}</span>
+          </span>
+        </h1>
       } @else {
-        <h1 #pageHeading tabindex="-1" class="title tt-row dbl" [class]="'bg-' + nav.page().band"><span class="tt-s" [class]="'fg-' + nav.page().titleFg">{{ margin }}{{ nav.page().title }}</span><span class="sr-only">, page {{ nav.page().number }}@if (nav.subCount() > 1) {, part {{ nav.subIndex() + 1 }} of {{ nav.subCount() }}}</span></h1>
+        <h1 #pageHeading tabindex="-1" class="title band" [class]="'bg-' + nav.page().band">
+          <span class="double" [class]="'fg-' + nav.page().titleColour"><span>{{ nav.page().title }}</span></span>
+          <span class="sr-only">
+            , page {{ nav.page().number }}
+            @if (nav.subCount() > 1) {
+              , part {{ nav.subIndex() + 1 }} of {{ nav.subCount() }}
+            }
+          </span>
+        </h1>
       }
 
-      <div class="content" [style.height.em]="narrow() ? null : contentRows()">
-        @if (nav.page().form === 'contact') {
-          <app-contact />
-        } @else {
-          @for (node of nav.subPage(); track $index) {
-            @if (listItems(node); as items) {
-              <ul>
-                @for (item of items; track $index) {
-                  <li appTtRows [rows]="item.rows" [link]="item.link"></li>
-                }
-              </ul>
-            } @else {
-              @switch (blockOf(node).tag) {
-                @case ('h2') {
-                  <h2 appTtRows [rows]="blockOf(node).rows" [link]="blockOf(node).link"></h2>
-                }
-                @case ('p') {
-                  <p appTtRows [rows]="blockOf(node).rows" [link]="blockOf(node).link"></p>
-                }
-                @default {
-                  <div
-                    appTtRows
-                    [rows]="blockOf(node).rows"
-                    [link]="blockOf(node).link"
-                    [attr.aria-hidden]="blockOf(node).spacer || null"
-                  ></div>
-                }
-              }
-            }
-          }
-        }
-      </div>
+      @if (nav.page().form === 'contact') {
+        <app-contact />
+      } @else {
+        <app-tt-blocks
+          #pages
+          class="pages"
+          [blocks]="nav.page().blocks"
+          (scroll)="onPagesScroll()"
+        />
+      }
 
-      <!-- Row 24: back / sub-page counter / next -->
-      <nav aria-label="Page" appTtRows [rows]="navRows()"></nav>
+      <!-- Back / sub-page counter / next -->
+      <nav class="nav-row" aria-label="Page">
+        @if (navRow().back; as back) {
+          <a class="back fg-cyan" [appTtLink]="back.target">{{ back.label }}</a>
+        }
+        @if (navRow().counter; as counter) {
+          <span class="counter">{{ counter }}</span>
+        }
+        @if (navRow().forward; as forward) {
+          <a class="forward fg-cyan" [appTtLink]="forward.target">{{ forward.label }}</a>
+        }
+      </nav>
     </main>
 
-    <!-- Row 25: Fastext - four coloured links, also on the R G Y C keys -->
+    <!-- Fastext: four coloured links, also on the R G Y C keys -->
     @if (!narrow()) {
-    <nav class="tt-row fastext" aria-label="Fastext">
-      <span class="tt-s tt-pad" aria-hidden="true">{{ margin }}</span>@for (key of fastext; track key.page; let last = $last) {<a class="tt-s" [class]="'fg-' + key.colour" [href]="'#' + key.page" [attr.aria-keyshortcuts]="key.colour[0].toUpperCase()" (click)="goToFastext($event, key.page)">{{ key.label }}</a>@if (!last) {<span class="tt-s tt-pad" aria-hidden="true">{{ fastextGaps() }}</span>}}
-    </nav>
+      <nav class="fastext" aria-label="Fastext">
+        @for (key of fastext; track key.page) {
+          <a
+            [class]="'fg-' + key.colour"
+            [appTtLink]="key.target"
+            [attr.aria-keyshortcuts]="key.colour[0].toUpperCase()"
+          >{{ key.label }}</a>
+        }
+      </nav>
     }
   </div>
 
   @if (!narrow()) {
-
-  <!-- Outside the set: a minimal remote for touch screens and discoverability -->
-  <div class="remote">
-    <form class="remote-page" (submit)="submitPage($event)">
-      <label for="page-entry">Page</label>
-      <input
-        id="page-entry"
-        type="text"
-        inputmode="numeric"
-        autocomplete="off"
-        maxlength="3"
-        placeholder="100"
-        [value]="pageInput()"
-        (input)="onPageInput($any($event.target).value)"
-      />
-    </form>
-    <button type="button" (click)="nav.prevSub()" [disabled]="nav.subIndex() === 0" aria-label="Previous sub-page">&#x25C4;</button>
-    <button type="button" (click)="nav.nextSub()" [disabled]="nav.subIndex() >= nav.subCount() - 1" aria-label="Next sub-page">&#x25BA;</button>
-    <button type="button" (click)="nav.toggleScanlines()" [attr.aria-pressed]="nav.scanlines()">Scanlines {{ nav.scanlines() ? 'on' : 'off' }}</button>
-    <p class="remote-hint">Type 3 digits for a page. R G Y C = coloured keys. &#x25C4; &#x25BA; = sub-pages.</p>
-  </div>
+    <!-- Outside the set: a minimal remote for touch screens and discoverability -->
+    <div class="remote">
+      <form class="remote-page" (submit)="submitPage($event)">
+        <label for="page-entry">Page</label>
+        <input
+          id="page-entry"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="3"
+          placeholder="100"
+          [value]="pageInput()"
+          (input)="onPageInput($any($event.target).value)"
+        />
+      </form>
+      <button type="button" (click)="nav.prevSub()" [disabled]="nav.subIndex() === 0" aria-label="Previous sub-page">&#x25C4;</button>
+      <button type="button" (click)="nav.nextSub()" [disabled]="nav.subIndex() >= nav.subCount() - 1" aria-label="Next sub-page">&#x25BA;</button>
+      <button type="button" (click)="nav.toggleScanlines()" [attr.aria-pressed]="nav.scanlines()">Scanlines {{ nav.scanlines() ? 'on' : 'off' }}</button>
+      <p class="remote-hint">Type 3 digits for a page. R G Y C = coloured keys. &#x25C4; &#x25BA; = sub-pages.</p>
+    </div>
   }
 
   <footer class="credits">

@@ -1,34 +1,40 @@
-<!-- 20 rows on the character grid: every field, error and status line has a fixed row.
-     Column 0 is the margin (padding-left in contact.scss). -->
-<form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="tt-form" novalidate>
-  <span class="tt-row" aria-hidden="true"></span>
-  <p class="tt-row tt-intro"><span class="tt-s fg-cyan">Let's build something great together</span></p>
-  <span class="tt-row" aria-hidden="true"></span>
+<form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="message-form" novalidate>
+  <p class="intro fg-cyan">Let's build something great together</p>
 
   @for (field of fields; track field.id) {
-    <div class="tt-row tt-field"><label class="tt-s fg-cyan" [for]="field.id">{{ field.label.padEnd(9) }}</label><input
+    <div class="field">
+      <label class="fg-cyan" [for]="field.id">{{ field.label }}</label>
+      <input
         [id]="field.id"
         [type]="field.type"
         [formControlName]="field.id"
         [attr.autocomplete]="field.autocomplete"
         [attr.aria-invalid]="showError(field.id)"
         [attr.aria-describedby]="field.id + '-error'"
-      /></div>
-    <span class="tt-row"><span class="tt-s fg-red" [id]="field.id + '-error'">{{ showError(field.id) ? getErrorMessage(field.id) : '' }}</span></span>
+      />
+    </div>
+    <p class="error fg-red" [id]="field.id + '-error'">{{ showError(field.id) ? getErrorMessage(field.id) : '' }}</p>
   }
 
-  <div class="tt-row"><label class="tt-s fg-cyan" for="message">Message</label></div>
-  <div class="tt-row tt-area"><textarea
-      id="message"
-      formControlName="message"
-      rows="5"
-      [attr.aria-invalid]="showError('message')"
-      aria-describedby="message-error"
-    ></textarea></div>
-  <span class="tt-row"><span class="tt-s fg-red" id="message-error">{{ showError('message') ? getErrorMessage('message') : '' }}</span></span>
+  <label class="fg-cyan" for="message">Message</label>
+  <textarea
+    id="message"
+    formControlName="message"
+    rows="5"
+    [attr.aria-invalid]="showError('message')"
+    aria-describedby="message-error"
+  ></textarea>
+  <p class="error fg-red" id="message-error">{{ showError('message') ? getErrorMessage('message') : '' }}</p>
 
-  <span class="tt-row" aria-hidden="true"></span>
-  <div class="tt-row"><button type="submit" [disabled]="contactForm.invalid || isSubmitting() || isRateLimited()">@if (isRateLimited()) { Wait {{ cooldownRemaining() }} } @else if (isSubmitting()) { Sending... } @else { Send Message }</button></div>
+  <button type="submit" [disabled]="contactForm.invalid || isSubmitting() || isRateLimited()">
+    @if (isRateLimited()) {
+      Wait {{ cooldownRemaining() }}
+    } @else if (isSubmitting()) {
+      Sending...
+    } @else {
+      Send Message
+    }
+  </button>
 
-  <p class="tt-status" role="status" [class.fg-green]="submitSuccess()" [class.fg-red]="!submitSuccess()">{{ submitMessage() }}</p>
+  <p class="status" role="status" [class.fg-green]="submitSuccess()" [class.fg-red]="!submitSuccess()">{{ submitMessage() }}</p>
 </form>

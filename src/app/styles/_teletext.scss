@@ -1,76 +1,47 @@
-// Character-grid primitives shared by every teletext page.
-// One row = 1em tall (line-height 1), one column = 1ch wide (monospace).
-// Colours are only ever the eight --tt-* values; each span carries its
-// foreground/background in --fg/--bg so focus can swap them (inverse video).
+// Shared teletext styles. Colours are only ever the eight --tt-* values.
+// Each colour class also stores its colour in --fg / --bg, so a focused link
+// can swap them (inverse video, like a teletext cursor).
 
-$tt-colours: black, red, green, yellow, blue, magenta, cyan, white;
+$tt-colours: "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white";
 
 @each $name in $tt-colours {
   .fg-#{$name} {
     --fg: var(--tt-#{$name});
+    color: var(--fg);
   }
 
   .bg-#{$name} {
     --bg: var(--tt-#{$name});
+    background: var(--bg);
   }
 }
 
-.tt-row {
-  display: block;
-  height: 1em;
-  white-space: pre;
-  overflow-x: clip;
-  background: var(--bg);
-
-  // Double height: the glyphs are stretched 2x vertically, never wider.
-  &.dbl {
-    height: 2em;
-
-    > .tt-s {
-      display: inline-block;
-      height: 1em;
-      vertical-align: top;
-      transform: scaleY(2);
-      transform-origin: 0 0;
-    }
-  }
-}
-
-.tt-s {
-  color: var(--fg);
-  background: var(--bg);
-}
-
-.dbl-s {
-  display: inline-block;
-  height: 1em;
-  vertical-align: top;
-  transform: scaleY(2);
-  transform-origin: 0 0;
-}
-
-// :where() keeps this at zero specificity so span colours (.tt-s) still win.
 :where(.screen a) {
   color: inherit;
   text-decoration: none;
   outline: none;
 }
 
-// Keyboard focus, hover and touch press: inverse video block cursor.
+// Keyboard focus, hover and touch press: the whole link inverts.
 // Hover only on devices that really hover, so a tapped link doesn't stay inverted.
-.tt-link:focus-visible .tt-s:not(.tt-pad),
-.tt-link:active .tt-s:not(.tt-pad),
-a.tt-s:focus-visible,
-a.tt-s:active {
-  color: var(--bg);
+.screen a:focus-visible,
+.screen a:active {
   background: var(--fg);
+  color: var(--bg);
+
+  * {
+    color: inherit;
+  }
 }
 
 @media (hover: hover) {
-  .tt-link:hover .tt-s:not(.tt-pad),
-  a.tt-s:hover {
-    color: var(--bg);
+  .screen a:hover {
     background: var(--fg);
+    color: var(--bg);
+
+    * {
+      color: inherit;
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import {
   DestroyRef,
   ElementRef,
   HostListener,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -12,10 +13,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { TeletextNavService } from '../../../services/teletext-nav';
-import { FASTEXT } from '../../../services/teletext-pages';
-import { TtBlock, TtNode, TtRow, TtSpan } from '../../../models/teletext.model';
-import { COLS, MARGIN, ROWS, blockHeight } from '../../../utils/teletext-layout';
-import { TtRowsComponent } from '../../shared/tt-rows/tt-rows';
+import { FASTEXT, PAGE } from '../../../services/teletext-pages';
+import { TtTarget } from '../../../models/teletext.model';
+import { mosaicWord } from '../../../utils/mosaic';
+import { TtBlocksComponent } from '../../shared/tt-blocks/tt-blocks';
+import { TtLinkDirective } from '../../shared/tt-link/tt-link';
 import { ContactComponent } from '../../sections/contact/contact';
 
 // Short service name shown in the header row, Ceefax style ("CEEFAX 1 100").
@@ -24,17 +26,19 @@ const SERVICE_NAME = 'SANDERFAX';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Space left around the screen: 16px side gutters plus room for the remote strip.
-const GUTTER = 16;
-// Target width of one character cell on phones (px). The grid gets as many
-// columns as fit at this size (20-40), so text stays large and clear.
-const MOBILE_CELL = 12;
-const REMOTE_ALLOWANCE = 88;
+// Phones (portrait, or a small touch screen held sideways) get a scrolling
+// page with larger text instead of the fixed 40x25 screen.
+const NARROW_QUERY = '(max-aspect-ratio: 1/1), (pointer: coarse) and (max-height: 599px)';
+
+interface NavLink {
+  label: string;
+  target: TtTarget;
+}
 
 @Component({
   selector: 'app-teletext-screen',
   standalone: true,
-  imports: [TtRowsComponent, ContactComponent],
+  imports: [TtBlocksComponent, TtLinkDirective, ContactComponent],
   templateUrl: './teletext-screen.html',
   styleUrls: ['./teletext-screen.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,82 +46,72 @@ const REMOTE_ALLOWANCE = 88;
 export class TeletextScreenComponent {
   readonly nav = inject(TeletextNavService);
 
-  readonly fastext = FASTEXT;
-  readonly rows = ROWS;
-  readonly margin = MARGIN;
+  readonly serviceName = SERVICE_NAME;
+  readonly fastext = FASTEXT.map((key) => ({ ...key, target: { page: key.page } as TtTarget }));
+  readonly indexTarget: TtTarget = { page: PAGE.index };
+  readonly logo = mosaicWord('SV');
   readonly year = new Date().getFullYear();
 
-  readonly fontSize = signal(16);
   readonly narrow = signal(false);
-  readonly cols = signal(COLS);
   readonly now = signal(new Date());
   readonly pageInput = signal('');
 
-  private readonly heading = viewChild('pageHeading', { read: ElementRef });
+  private readonly heading = viewChild<ElementRef<HTMLElement>>('pageHeading');
+  private readonly pages = viewChild('pages', { read: ElementRef<HTMLElement> });
 
-  readonly header = computed(() => {
+  readonly clock = computed(() => {
     const now = this.now();
-    const date = `${DAYS[now.getDay()]} ${pad(now.getDate())} ${MONTHS[now.getMonth()]}`;
-    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    const cols = this.cols();
-    const requested = this.nav.requested().padEnd(cols < COLS ? 5 : 6);
-    // On a narrow grid drop the date, then the service name, until the row fits.
-    let day = date + ' ';
-    let service = `${SERVICE_NAME} ${this.nav.rolling()}`;
-    const used = () => requested.length + service.length + day.length + time.length + 1;
-    if (used() > cols) day = '';
-    if (used() > cols) service = String(this.nav.rolling());
-    const gap = ' '.repeat(Math.max(1, cols - used() + 1));
-    return { requested, service, gap, date: day, time, datetime: now.toISOString() };
+    return {
+      date: `${DAYS[now.getDay()]} ${pad(now.getDate())} ${MONTHS[now.getMonth()]}`,
+      time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+      iso: now.toISOString(),
+    };
   });
-
-  readonly titleRows = computed(() => {
-    const masthead = this.nav.page().masthead;
-    return masthead ? blockHeight(masthead) : 2;
-  });
-
-  // Rows between the title band and the navigation row.
-  readonly contentRows = computed(() => ROWS - 3 - this.titleRows());
 
   // The row above the Fastext bar: back / sub-page counter / next.
-  readonly navRow = computed<TtRow>(() => {
+  readonly navRow = computed(() => {
     const page = this.nav.page();
     const count = this.nav.subCount();
     const sub = Math.min(this.nav.subIndex(), count - 1);
 
-    let left: TtSpan | null = null;
-    if (sub > 0) left = { text: '◄ Previous', fg: 'cyan', link: { page: page.number, sub: sub - 1 } };
-    else if (page.parent) left = { text: `◄ Back ${page.parent}`, fg: 'cyan', link: { page: page.parent } };
+    let back: NavLink | null = null;
+    if (sub > 0) back = { label: '◄ Previous', target: { page: page.number, sub: sub - 1 } };
+    else if (page.parent) back = { label: `◄ Back ${page.parent}`, target: { page: page.parent } };
 
-    let right: TtSpan | null = null;
-    if (sub < count - 1) right = { text: 'Continued ►', fg: 'cyan', link: { page: page.number, sub: sub + 1 } };
-    else if (page.next) right = { text: `Next ${page.next} ►`, fg: 'cyan', link: { page: page.next } };
+    let forward: NavLink | null = null;
+    if (sub < count - 1) forward = { label: 'Continued ►', target: { page: page.number, sub: sub + 1 } };
+    else if (page.next) forward = { label: `Next ${page.next} ►`, target: { page: page.next } };
 
-    const middle: TtSpan | null = count > 1 ? { text: `${sub + 1}/${count}`, fg: 'white' } : null;
-
-    if (!left && !right && !middle && page.footer) return page.footer;
-    return placeRow(left, middle, right, this.cols());
-  });
-
-  readonly navRows = computed(() => [this.navRow()]);
-
-  readonly fastextGaps = computed(() => {
-    const used = this.fastext.reduce((sum, key) => sum + key.label.length, 0);
-    const between = Math.floor((COLS - 1 - used) / (this.fastext.length - 1));
-    return ' '.repeat(between);
+    return { back, forward, counter: count > 1 ? `${sub + 1}/${count}` : null };
   });
 
   constructor() {
     const destroyRef = inject(DestroyRef);
 
     const clock = setInterval(() => this.now.set(new Date()), 1000);
-    const onResize = () => this.fit();
+
+    const narrowQuery = window.matchMedia(NARROW_QUERY);
+    const onNarrowChange = () => this.narrow.set(narrowQuery.matches);
+    onNarrowChange();
+    narrowQuery.addEventListener('change', onNarrowChange);
+
+    const onResize = () => this.measure();
     window.addEventListener('resize', onResize);
-    this.fit();
+    // Bedstead loads with font-display: block; re-measure once it's in.
+    document.fonts?.ready.then(() => this.measure());
 
     destroyRef.onDestroy(() => {
       clearInterval(clock);
+      narrowQuery.removeEventListener('change', onNarrowChange);
       window.removeEventListener('resize', onResize);
+    });
+
+    // Each new page (or layout) is measured once the browser has laid it out.
+    afterRenderEffect(() => {
+      this.nav.page();
+      this.narrow();
+      this.nav.subIndex();
+      this.measure();
     });
 
     // After a user-initiated page change, move focus to the new page title so
@@ -169,9 +163,11 @@ export class TeletextScreenComponent {
     }
   }
 
-  goToFastext(event: Event, page: number): void {
-    event.preventDefault();
-    this.nav.goTo(page);
+  // Tabbing to a link on a later sub-page scrolls it into view; follow along.
+  onPagesScroll(): void {
+    const el = this.pages()?.nativeElement;
+    if (!el || this.narrow()) return;
+    this.nav.syncSub(Math.round(el.scrollLeft / el.clientWidth));
   }
 
   submitPage(event: Event): void {
@@ -192,72 +188,21 @@ export class TeletextScreenComponent {
     }
   }
 
-  listItems(node: TtNode): TtBlock[] | null {
-    return 'items' in node ? node.items : null;
-  }
-
-  blockOf(node: TtNode): TtBlock {
-    return (node as { block: TtBlock }).block;
-  }
-
-  // Desktop: scale the 40x25 screen to fit the viewport, using the extended
-  // (wider) font for TV proportions, with whole-pixel cells where possible so
-  // mosaic graphics join up without seams.
-  // Phones (portrait, or a touch screen held sideways): re-wrap pages to as many columns as fit at a readable
-  // cell size and let the page scroll, instead of shrinking 40 columns.
-  private fit(): void {
-    const availW = document.documentElement.clientWidth - GUTTER * 2;
-    const availH = window.innerHeight - GUTTER * 2 - REMOTE_ALLOWANCE;
-    const touchLandscape =
-      window.matchMedia?.('(pointer: coarse)').matches && window.innerHeight < 600;
-    const narrow = availW / availH < 1 || touchLandscape;
-    let cols = COLS;
-    let size: number;
-    if (narrow) {
-      cols = Math.max(20, Math.min(COLS, Math.floor(availW / MOBILE_CELL)));
-      size = availW / (cols * 0.6);
-    } else {
-      const raw = Math.min(availW / 30, availH / ROWS);
-      size = Math.floor(raw);
-      if (size >= 16) size = Math.floor(size / 4) * 4;
+  // On the fixed screen, long pages flow into extra CSS columns to the right
+  // of the visible one; each column is one sub-page. Count them and show the
+  // current one. Phones have no sub-pages: the page just scrolls.
+  private measure(): void {
+    const el = this.pages()?.nativeElement;
+    if (!el || this.narrow()) {
+      this.nav.setSubCount(1);
+      return;
     }
-    this.narrow.set(narrow);
-    this.cols.set(cols);
-    this.nav.columns.set(cols);
-    this.fontSize.set(Math.max(8, size));
+    const width = el.clientWidth;
+    this.nav.setSubCount(Math.max(1, Math.round(el.scrollWidth / width)));
+    el.scrollLeft = untracked(() => this.nav.subIndex()) * width;
   }
 }
 
 function pad(n: number): string {
   return String(n).padStart(2, '0');
-}
-
-// Lay out up to three spans across a 40-column row: left-aligned at column 1,
-// centred, and right-aligned to column 38.
-function placeRow(
-  left: TtSpan | null,
-  middle: TtSpan | null,
-  right: TtSpan | null,
-  cols: number,
-): TtRow {
-  const spans: TtSpan[] = [{ text: MARGIN, decorative: true }];
-  let col = 1;
-  const moveTo = (target: number) => {
-    if (target > col) spans.push({ text: ' '.repeat(target - col), decorative: true });
-    col = Math.max(col, target);
-  };
-  if (left) {
-    spans.push(left);
-    col += left.text.length;
-  }
-  if (middle) {
-    moveTo(Math.floor((cols - middle.text.length) / 2));
-    spans.push(middle);
-    col += middle.text.length;
-  }
-  if (right) {
-    moveTo(cols - 1 - right.text.length);
-    spans.push(right);
-  }
-  return { spans };
 }

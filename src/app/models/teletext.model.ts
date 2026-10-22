@@ -6,60 +6,60 @@ export type TtTarget =
   | { href: string }
   | { action: 'cv' };
 
-// A run of characters sharing one foreground/background colour.
-export interface TtSpan {
-  text: string;
-  fg?: TtColour;
-  bg?: TtColour;
+// A contents entry: "Projects ..................... 200". The whole entry is one link.
+export interface TtEntry {
+  label: string;
+  target: TtTarget;
+  // Shown after the dotted leader, usually the page number.
+  right: string;
+  // Short prefix before the label, e.g. '*' for featured projects.
+  marker?: string;
+  // Second line under the entry, e.g. the company under a job title.
+  sub?: string;
+}
+
+// "Label    value" pair, rendered as a <dl> row.
+export interface TtDetail {
+  label: string;
+  value: string;
   link?: TtTarget;
-  // Purely visual (dotted leaders, mosaic graphics, bullets) - hidden from screen readers.
-  decorative?: boolean;
-  // Span-level double height, for mixing double-height text with mosaics on one row.
-  double?: boolean;
 }
 
-// One 40-column screen row. A double-height row occupies two rows.
-export interface TtRow {
-  spans: TtSpan[];
-  bg?: TtColour;
-  double?: boolean;
+interface BlockBase {
+  // Blank rows above the block. Dropped automatically at the top of a sub-page.
+  gap?: number;
 }
 
-export type TtTag = 'h2' | 'p' | 'li' | 'div';
+export type TtBlock = BlockBase &
+  (
+    | { kind: 'heading'; text: string }
+    | {
+        kind: 'text';
+        text: string;
+        colour?: TtColour;
+        centre?: boolean;
+        // Only show on the keyboard (desktop) or touch (phone) layout.
+        only?: 'desktop' | 'touch';
+      }
+    | { kind: 'contents'; entries: TtEntry[] }
+    | { kind: 'bullets'; items: string[] }
+    | { kind: 'details'; rows: TtDetail[]; labelWidth?: number; labelColour?: TtColour }
+    // Short words in aligned columns; `width` is the longest item in characters.
+    | { kind: 'columns'; items: string[]; width: number }
+    // Small stacked items (certificates): each line has its own colour.
+    | { kind: 'cards'; cards: { text: string; colour?: TtColour }[][] }
+  );
 
-// A semantic chunk of a page (heading, paragraph, list item...) already wrapped to rows.
-export interface TtBlock {
-  tag: TtTag;
-  rows: TtRow[];
-  // Whole block is one link (e.g. an index entry with dotted leader).
-  link?: TtTarget;
-  // Don't leave this block as the last thing on a sub-page (headings).
-  keepWithNext?: boolean;
-  // Never split this block across sub-pages.
-  keepTogether?: boolean;
-  // Blank spacer rows - dropped when they'd start a new sub-page.
-  spacer?: boolean;
-}
-
-// Consecutive list items get grouped into one <ul> when rendered.
-export type TtNode = { block: TtBlock } | { items: TtBlock[] };
-
-export interface TtPageSource {
+export interface TtPage {
   number: number;
   title: string;
   band: TtColour;
-  titleFg: TtColour;
-  // Replaces the standard double-height title band (used by the P100 masthead).
-  masthead?: TtBlock;
+  titleColour: TtColour;
+  // P100 replaces the title band with a masthead (mosaic logo, name, job title).
+  masthead?: { name: string; title: string };
   blocks: TtBlock[];
-  // Page body is an interactive component instead of composed rows.
+  // The page body is an interactive component instead of blocks.
   form?: 'contact';
   parent?: number;
   next?: number;
-  // Override for the row above the Fastext bar when there's no parent/next/sub-page to show.
-  footer?: TtRow;
-}
-
-export interface TtPage extends Omit<TtPageSource, 'blocks'> {
-  subPages: TtNode[][];
 }

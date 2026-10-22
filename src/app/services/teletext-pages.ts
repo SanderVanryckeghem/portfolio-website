@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
 import { PortfolioService } from './portfolio';
 import { Developer } from '../models/developer.model';
@@ -7,25 +8,7 @@ import { Experience } from '../models/experience.model';
 import { Education } from '../models/education.model';
 import { Certificate } from '../models/certificate.model';
 import { Technology, TechCategory } from '../models/technology.model';
-import { TtBlock, TtPage, TtPageSource, TtTarget } from '../models/teletext.model';
-import {
-  COLS,
-  MARGIN,
-  blank,
-  gridCols,
-  withColumns,
-  bullet,
-  columns,
-  contentCapacity,
-  heading,
-  keyValue,
-  leader,
-  mosaicWord,
-  paginate,
-  row,
-  text,
-  blockHeight,
-} from '../utils/teletext-layout';
+import { TtBlock, TtColour, TtDetail, TtEntry, TtPage, TtTarget } from '../models/teletext.model';
 
 // Page map:
 //   100 index
@@ -65,19 +48,10 @@ const SERVICES = ['Web', 'Mobile', 'Frontend', 'Fullstack'];
 
 const CV: TtTarget = { action: 'cv' };
 
-interface PortfolioData {
-  developer: Developer;
-  projects: Project[];
-  technologies: Technology[];
-  experiences: Experience[];
-  education: Education[];
-  certificates: Certificate[];
-}
-
 /**
- * Turns the portfolio content into numbered teletext pages: 40x25 sub-pages
- * on desktop, or a narrower continuous grid on phones. All copy comes from PortfolioService or the constants
- * above - this service only decides where it goes on the grid.
+ * Turns the portfolio content into numbered teletext pages. Pages are plain
+ * data (headings, paragraphs, lists); layout and splitting into sub-pages is
+ * left to the browser. All copy comes from PortfolioService or the constants above.
  */
 @Injectable({
   providedIn: 'root',
@@ -85,11 +59,7 @@ interface PortfolioData {
 export class TeletextPagesService {
   private readonly portfolioService = inject(PortfolioService);
 
-  private readonly data = signal<PortfolioData | null>(null);
-  // Composed pages per grid width (40 on desktop, narrower on phones).
-  private readonly cache = new Map<number, Map<number, TtPage>>();
-
-  constructor() {
+  private readonly data = toSignal(
     combineLatest({
       developer: this.portfolioService.getDeveloper(),
       projects: this.portfolioService.getProjects(),
@@ -97,467 +67,383 @@ export class TeletextPagesService {
       experiences: this.portfolioService.getExperiences(),
       education: this.portfolioService.getEducation(),
       certificates: this.portfolioService.getCertificates(),
-    }).subscribe((data) => {
-      this.cache.clear();
-      this.data.set(data);
-    });
+    }),
+  );
+
+  private readonly pages = computed(() => {
+    const data = this.data();
+    if (!data) return new Map<number, TtPage>();
+    const pages = [
+      indexPage(data.developer),
+      ...projectPages(data.projects),
+      ...experiencePages(data.experiences),
+      educationPage(data.education),
+      certificatesPage(data.certificates),
+      aboutPage(data.developer),
+      technologiesPage(data.technologies),
+      contactPage(data.developer),
+      messagePage(),
+    ];
+    return new Map(pages.map((page) => [page.number, page]));
+  });
+
+  get(number: number): TtPage | undefined {
+    return this.pages().get(number);
   }
 
-  get(number: number, cols: number = COLS): TtPage | undefined {
-    return this.pagesFor(cols).get(number);
+  notFound(number: number): TtPage {
+    return {
+      number,
+      title: 'Page not found',
+      band: 'red',
+      titleColour: 'white',
+      parent: PAGE.index,
+      blocks: [
+        text(`Page ${number} is not in this service.`),
+        contents([pageEntry('Index', PAGE.index)], 1),
+      ],
+    };
   }
+}
 
-  notFound(number: number, cols: number = COLS): TtPage {
-    return withColumns(cols, () =>
-      compose(
-        {
-          number,
-          title: 'Page not found',
-          band: 'red',
-          titleFg: 'white',
-          parent: PAGE.index,
-          blocks: [
-            blank(),
-            text(`Page ${number} is not in this service.`),
-            blank(),
-            leader('Index', { page: PAGE.index }, String(PAGE.index)),
-          ],
-        },
-        cols,
+// Block helpers ---------------------------------------------------------------
+
+function heading(content: string, gap = 0): TtBlock {
+  return { kind: 'heading', text: content, gap };
+}
+
+function text(content: string, colour?: TtColour, gap = 0): TtBlock {
+  return { kind: 'text', text: content, colour, gap };
+}
+
+function contents(entries: TtEntry[], gap = 0): TtBlock {
+  return { kind: 'contents', entries, gap };
+}
+
+function details(rows: TtDetail[], gap = 0, labelWidth?: number): TtBlock {
+  return { kind: 'details', rows, gap, labelWidth };
+}
+
+function pageEntry(label: string, page: number, extra: Partial<TtEntry> = {}): TtEntry {
+  return { label, target: { page }, right: String(page), ...extra };
+}
+
+const CV_ENTRY: TtEntry = { label: 'Download CV', target: CV, right: 'PDF' };
+
+// P100 -----------------------------------------------------------------------
+
+function indexPage(dev: Developer): TtPage {
+  return {
+    number: PAGE.index,
+    title: dev.name,
+    band: 'blue',
+    titleColour: 'yellow',
+    masthead: { name: dev.name, title: dev.title },
+    blocks: [
+      text(`Hi, I'm ${dev.name}`, 'yellow'),
+      text(HERO_TITLES.join(', '), 'cyan'),
+      contents(
+        [
+          pageEntry('About Me', PAGE.about),
+          pageEntry('Technologies', PAGE.technologies),
+          pageEntry('My Projects', PAGE.projects),
+          pageEntry('Work Experience', PAGE.experience),
+          pageEntry('Education', PAGE.education),
+          pageEntry('Certificates', PAGE.certificates),
+          pageEntry('Get In Touch', PAGE.contact),
+          pageEntry('Send Message', PAGE.message),
+          CV_ENTRY,
+        ],
+        1,
+      ),
+      // Two blank rows centre the hint between the list and the Fastext bar.
+      {
+        kind: 'text',
+        text: 'Key in a 3-digit page number, or use the coloured keys below.',
+        centre: true,
+        only: 'desktop',
+        gap: 2,
+      },
+      {
+        kind: 'text',
+        text: 'Tap a topic, or use the coloured buttons above.',
+        centre: true,
+        only: 'touch',
+        gap: 1,
+      },
+    ],
+  };
+}
+
+// P200 -----------------------------------------------------------------------
+
+function projectPages(projects: Project[]): TtPage[] {
+  const numbered = projects.map((project, i) => ({ project, page: PAGE.projects + 1 + i }));
+  const categoryOf = (project: Project) => project.category ?? 'Other project';
+  const categories = [...new Set(projects.map(categoryOf))];
+
+  const index: TtBlock[] = [text('A selection of my recent work and personal projects', 'cyan')];
+  for (const category of categories) {
+    index.push(
+      heading(`${category}s`, 1),
+      contents(
+        numbered
+          .filter(({ project }) => categoryOf(project) === category)
+          .map(({ project, page }) =>
+            pageEntry(project.title, page, { marker: project.featured ? '*' : ' ' }),
+          ),
       ),
     );
   }
+  index.push(text('* Featured', 'yellow', 1));
 
-  private pagesFor(cols: number): Map<number, TtPage> {
-    const data = this.data();
-    if (!data) return new Map();
-    let pages = this.cache.get(cols);
-    if (!pages) {
-      pages = withColumns(cols, () => {
-        const sources = [
-          this.indexPage(data.developer),
-          ...this.projectPages(data.projects),
-          ...this.experiencePages(data.experiences),
-          this.educationPage(data.education),
-          this.certificatesPage(data.certificates),
-          this.aboutPage(data.developer),
-          this.technologiesPage(data.technologies),
-          this.contactPage(data.developer),
-          this.messagePage(),
-        ];
-        return new Map(sources.map((source) => [source.number, compose(source, cols)]));
-      });
-      this.cache.set(cols, pages);
+  const detail = numbered.map(({ project, page }, i): TtPage => {
+    const meta = [project.category, project.featured ? 'Featured' : null].filter(Boolean);
+    const blocks: TtBlock[] = [heading(project.title)];
+    if (meta.length) blocks.push(text(meta.join(' · '), 'cyan'));
+    if (project.completedDate) {
+      blocks.push(text(`Completed: ${formatMonthYear(project.completedDate)}`));
     }
-    return pages;
-  }
+    blocks.push(text(project.description, 'cyan', 1));
+    if (project.longDescription) {
+      blocks.push(heading('About this project', 1), text(project.longDescription));
+    }
+    blocks.push(heading('Technologies Used', 1), text(project.technologies.join(', '), 'cyan'));
 
-  // P100 ---------------------------------------------------------------------
-
-  private indexPage(dev: Developer): TtPageSource {
-    const logo = mosaicWord('SV');
-    // Drop the mosaic logo when the name wouldn't fit beside it (narrow phones).
-    const showLogo = MARGIN.length + logo[0].length + 2 + dev.name.length <= gridCols();
-    const masthead: TtBlock = showLogo ? {
-      tag: 'div',
-      rows: [
-        row(
-          [
-            { text: MARGIN, decorative: true },
-            { text: logo[0], fg: 'white', decorative: true },
-            { text: '  ' },
-            { text: dev.name, fg: 'yellow', double: true },
-          ],
-          { bg: 'blue' },
-        ),
-        row([{ text: MARGIN + logo[1], fg: 'white', decorative: true }], { bg: 'blue' }),
-        row(
-          [
-            { text: MARGIN, decorative: true },
-            { text: logo[2], fg: 'white', decorative: true },
-            { text: '  ' },
-            { text: dev.title, fg: 'cyan' },
-          ],
-          { bg: 'blue' },
-        ),
-      ],
-    } : {
-      tag: 'div',
-      rows: [
-        row([{ text: MARGIN + dev.name, fg: 'yellow' }], { bg: 'blue', double: true }),
-        row([{ text: MARGIN + dev.title, fg: 'cyan' }], { bg: 'blue' }),
-      ],
-    };
-
-    const entry = (label: string, page: number) => leader(label, { page }, String(page));
+    const links: TtDetail[] = [];
+    if (project.demoUrl) {
+      links.push({ label: 'Live Demo', value: stripScheme(project.demoUrl), link: { href: project.demoUrl } });
+    }
+    if (project.githubUrl) {
+      links.push({ label: 'Code', value: stripScheme(project.githubUrl), link: { href: project.githubUrl } });
+    }
+    if (links.length) blocks.push(details(links, 1, 10));
 
     return {
-      number: PAGE.index,
-      title: dev.name,
-      band: 'blue',
-      titleFg: 'yellow',
-      masthead,
-      blocks: [
-        blank(),
-        text(`Hi, I'm ${dev.name}`, { fg: 'yellow' }),
-        text(HERO_TITLES.join(', '), { fg: 'cyan' }),
-        blank(),
-        entry('About Me', PAGE.about),
-        entry('Technologies', PAGE.technologies),
-        entry('My Projects', PAGE.projects),
-        entry('Work Experience', PAGE.experience),
-        entry('Education', PAGE.education),
-        entry('Certificates', PAGE.certificates),
-        entry('Get In Touch', PAGE.contact),
-        entry('Send Message', PAGE.message),
-        leader('Download CV', CV, 'PDF'),
-        blank(),
-        // On the 25-row screen, a second blank centres the hint between the list and Fastext.
-        ...(gridCols() === COLS ? [blank()] : []),
-        text(
-          gridCols() === COLS
-            ? 'Key in a 3-digit page number, or use the coloured keys below.'
-            : 'Tap a topic, or use the coloured buttons below.',
-          { centre: true },
-        ),
-      ],
+      number: page,
+      title: 'My Projects',
+      band: 'red',
+      titleColour: 'white',
+      parent: PAGE.projects,
+      next: numbered[i + 1]?.page,
+      blocks,
     };
-  }
+  });
 
-  // P200 ---------------------------------------------------------------------
+  return [
+    {
+      number: PAGE.projects,
+      title: 'My Projects',
+      band: 'red',
+      titleColour: 'white',
+      parent: PAGE.index,
+      blocks: index,
+    },
+    ...detail,
+  ];
+}
 
-  private projectPages(projects: Project[]): TtPageSource[] {
-    const numbered = projects.map((project, i) => ({ project, page: PAGE.projects + 1 + i }));
-    const categories = [...new Set(projects.map((p) => p.category ?? 'Other project'))];
+// P300 -----------------------------------------------------------------------
 
-    const index: TtBlock[] = [
-      blank(),
-      text('A selection of my recent work and personal projects', { fg: 'cyan' }),
-    ];
-    for (const category of categories) {
-      index.push(blank(), heading(`${category}s`));
-      for (const { project, page } of numbered.filter(
-        (n) => (n.project.category ?? 'Other project') === category,
-      )) {
-        index.push(
-          leader(project.title, { page }, String(page), {
-            marker: project.featured ? { text: '* ', fg: 'yellow' } : { text: '  ' },
-          }),
-        );
-      }
-    }
-    index.push(blank(), text('* Featured', { fg: 'yellow' }));
+function experiencePages(experiences: Experience[]): TtPage[] {
+  const numbered = experiences.map((exp, i) => ({ exp, page: PAGE.experience + 1 + i }));
 
-    const detail = numbered.map(({ project, page }, i): TtPageSource => {
-      const meta = [project.category, project.featured ? 'Featured' : null].filter(Boolean);
-      const blocks: TtBlock[] = [blank(), heading(project.title)];
-      if (meta.length) blocks.push(text(meta.join(' · '), { fg: 'cyan' }));
-      if (project.completedDate) {
-        blocks.push(text(`Completed: ${formatMonthYear(project.completedDate)}`));
-      }
-      blocks.push(blank(), text(project.description, { fg: 'cyan' }));
-      if (project.longDescription) {
-        blocks.push(blank(), heading('About this project'), text(project.longDescription));
-      }
-      blocks.push(
-        blank(),
-        heading('Technologies Used'),
-        text(project.technologies.join(', '), { fg: 'cyan' }),
-      );
-      if (project.demoUrl || project.githubUrl) blocks.push(blank());
-      if (project.demoUrl) {
-        blocks.push(
-          keyValue('Live Demo', stripScheme(project.demoUrl), {
-            labelWidth: 10,
-            link: { href: project.demoUrl },
-          }),
-        );
-      }
-      if (project.githubUrl) {
-        blocks.push(
-          keyValue('Code', stripScheme(project.githubUrl), {
-            labelWidth: 10,
-            link: { href: project.githubUrl },
-          }),
-        );
-      }
-      return {
-        number: page,
-        title: 'My Projects',
-        band: 'red',
-        titleFg: 'white',
-        parent: PAGE.projects,
-        next: numbered[i + 1]?.page,
-        blocks,
-      };
-    });
-
-    return [
-      {
-        number: PAGE.projects,
-        title: 'My Projects',
-        band: 'red',
-        titleFg: 'white',
-        parent: PAGE.index,
-        blocks: index,
-      },
-      ...detail,
-    ];
-  }
-
-  // P300 ---------------------------------------------------------------------
-
-  private experiencePages(experiences: Experience[]): TtPageSource[] {
-    const numbered = experiences.map((exp, i) => ({ exp, page: PAGE.experience + 1 + i }));
-
-    const index: TtBlock[] = [
-      blank(),
-      text('My professional journey', { fg: 'cyan' }),
-      blank(),
-      heading('Work Experience'),
-      ...numbered.map(({ exp, page }) =>
-        leader(exp.position, { page }, String(page), {
+  const index: TtBlock[] = [
+    text('My professional journey', 'cyan'),
+    heading('Work Experience', 1),
+    contents(
+      numbered.map(({ exp, page }) =>
+        pageEntry(exp.position, page, {
           sub: `${exp.company}, ${new Date(exp.startDate).getFullYear()}`,
         }),
       ),
-      blank(),
-      leader('Education', { page: PAGE.education }, String(PAGE.education)),
-      leader('Certificates', { page: PAGE.certificates }, String(PAGE.certificates)),
-    ];
+    ),
+    contents([pageEntry('Education', PAGE.education), pageEntry('Certificates', PAGE.certificates)], 1),
+  ];
 
-    const detail = numbered.map(({ exp, page }, i): TtPageSource => {
-      const period = `${formatMonthYear(exp.startDate)} - ${
-        exp.current ? 'Present' : formatMonthYear(exp.endDate!)
-      }`;
-      const where = [exp.type, exp.location].filter(Boolean).join(' · ');
-      const blocks: TtBlock[] = [
-        blank(),
-        heading(exp.position),
-        text(exp.company, { fg: 'cyan' }),
-        text(period),
-      ];
-      if (where) blocks.push(text(where));
-      blocks.push(blank(), text(exp.description));
-      if (exp.achievements?.length) {
-        blocks.push(blank(), heading('Achievements'), ...exp.achievements.map((a) => bullet(a)));
-      }
-      if (exp.technologies?.length) {
-        blocks.push(
-          blank(),
-          heading('Technologies'),
-          text(exp.technologies.join(', '), { fg: 'cyan' }),
-        );
-      }
-      return {
-        number: page,
-        title: 'Work Experience',
-        band: 'blue',
-        titleFg: 'cyan',
-        parent: PAGE.experience,
-        next: numbered[i + 1]?.page,
-        blocks,
-      };
-    });
+  const detail = numbered.map(({ exp, page }, i): TtPage => {
+    const period = `${formatMonthYear(exp.startDate)} - ${
+      exp.current ? 'Present' : formatMonthYear(exp.endDate!)
+    }`;
+    const where = [exp.type, exp.location].filter(Boolean).join(' · ');
+    const blocks: TtBlock[] = [heading(exp.position), text(exp.company, 'cyan'), text(period)];
+    if (where) blocks.push(text(where));
+    blocks.push(text(exp.description, undefined, 1));
+    if (exp.achievements?.length) {
+      blocks.push(heading('Achievements', 1), { kind: 'bullets', items: exp.achievements });
+    }
+    if (exp.technologies?.length) {
+      blocks.push(heading('Technologies', 1), text(exp.technologies.join(', '), 'cyan'));
+    }
+    return {
+      number: page,
+      title: 'Work Experience',
+      band: 'blue',
+      titleColour: 'cyan',
+      parent: PAGE.experience,
+      next: numbered[i + 1]?.page,
+      blocks,
+    };
+  });
 
+  return [
+    {
+      number: PAGE.experience,
+      title: 'Experience & Education',
+      band: 'blue',
+      titleColour: 'cyan',
+      parent: PAGE.index,
+      blocks: index,
+    },
+    ...detail,
+  ];
+}
+
+function educationPage(education: Education[]): TtPage {
+  const blocks = education.flatMap((edu, i): TtBlock[] => [
+    heading(edu.degree, i === 0 ? 0 : 1),
+    text(`${edu.institution} · ${edu.year}`, 'cyan'),
+    text(edu.description),
+    ...(edu.technologies?.length ? [text(edu.technologies.join(', '), 'cyan')] : []),
+  ]);
+  return {
+    number: PAGE.education,
+    title: 'Education',
+    band: 'blue',
+    titleColour: 'cyan',
+    parent: PAGE.experience,
+    next: PAGE.certificates,
+    blocks,
+  };
+}
+
+function certificatesPage(certificates: Certificate[]): TtPage {
+  const cards = certificates.map((cert) => {
+    const dates =
+      formatShortMonthYear(cert.achievedDate) +
+      (cert.expiryDate ? ` - Expires: ${formatShortMonthYear(cert.expiryDate)}` : '');
     return [
-      {
-        number: PAGE.experience,
-        title: 'Experience & Education',
-        band: 'blue',
-        titleFg: 'cyan',
-        parent: PAGE.index,
-        blocks: index,
-      },
-      ...detail,
+      { text: cert.name, colour: 'yellow' as const },
+      { text: cert.issuer, colour: 'cyan' as const },
+      { text: dates },
     ];
-  }
+  });
+  return {
+    number: PAGE.certificates,
+    title: 'Certificates',
+    band: 'blue',
+    titleColour: 'cyan',
+    parent: PAGE.experience,
+    blocks: [{ kind: 'cards', cards }],
+  };
+}
 
-  private educationPage(education: Education[]): TtPageSource {
-    const blocks: TtBlock[] = [];
-    for (const edu of education) {
-      blocks.push(
-        blank(),
-        heading(edu.degree),
-        text(`${edu.institution} · ${edu.year}`, { fg: 'cyan' }),
-        text(edu.description),
-      );
-      if (edu.technologies?.length) {
-        blocks.push(text(edu.technologies.join(', '), { fg: 'cyan' }));
-      }
-    }
-    return {
-      number: PAGE.education,
-      title: 'Education',
-      band: 'blue',
-      titleFg: 'cyan',
-      parent: PAGE.experience,
-      next: PAGE.certificates,
-      blocks,
-    };
-  }
+// P400 -----------------------------------------------------------------------
 
-  private certificatesPage(certificates: Certificate[]): TtPageSource {
-    const blocks: TtBlock[] = [];
-    for (const cert of certificates) {
-      const dates =
-        formatShortMonthYear(cert.achievedDate) +
-        (cert.expiryDate ? ` - Expires: ${formatShortMonthYear(cert.expiryDate)}` : '');
-      blocks.push(
-        blank(),
-        stack('li', [
-          text(cert.name, { fg: 'yellow' }),
-          text(cert.issuer, { fg: 'cyan' }),
-          text(dates),
-        ]),
-      );
-    }
-    return {
-      number: PAGE.certificates,
-      title: 'Certificates',
-      band: 'blue',
-      titleFg: 'cyan',
-      parent: PAGE.experience,
-      blocks,
-    };
-  }
+function aboutPage(dev: Developer): TtPage {
+  const facts: TtDetail[] = [];
+  if (dev.email) facts.push({ label: 'Email', value: dev.email, link: { href: `mailto:${dev.email}` } });
+  if (dev.location) facts.push({ label: 'Location', value: dev.location });
 
-  // P400 ---------------------------------------------------------------------
-
-  private aboutPage(dev: Developer): TtPageSource {
-    const blocks: TtBlock[] = [
-      blank(),
-      text('Get to know me better', { fg: 'cyan' }),
-      blank(),
-      heading(`I'm ${dev.name}`),
+  return {
+    number: PAGE.about,
+    title: 'About Me',
+    band: 'blue',
+    titleColour: 'yellow',
+    parent: PAGE.index,
+    next: PAGE.technologies,
+    blocks: [
+      text('Get to know me better', 'cyan'),
+      heading(`I'm ${dev.name}`, 1),
       text(dev.bio),
-      blank(),
-    ];
-    if (dev.email) {
-      blocks.push(keyValue('Email', dev.email, { link: { href: `mailto:${dev.email}` } }));
-    }
-    if (dev.location) blocks.push(keyValue('Location', dev.location));
-    blocks.push(
-      blank(),
-      heading('My Skills'),
-      text(dev.skills.join(', '), { fg: 'cyan' }),
-      blank(),
-      ...STATS.map((stat) =>
-        keyValue(stat.value, stat.label, { labelWidth: 6, labelFg: 'yellow' }),
-      ),
-      blank(),
-      text('Passionate web developer creating amazing digital experiences.'),
-      blank(),
-      heading('Services'),
-      text(SERVICES.join(' · '), { fg: 'cyan' }),
-      blank(),
-      leader('Technologies', { page: PAGE.technologies }, String(PAGE.technologies)),
-      leader('Download CV', CV, 'PDF'),
-    );
-    return {
-      number: PAGE.about,
-      title: 'About Me',
-      band: 'blue',
-      titleFg: 'yellow',
-      parent: PAGE.index,
-      next: PAGE.technologies,
-      blocks,
-    };
+      details(facts, 1),
+      heading('My Skills', 1),
+      text(dev.skills.join(', '), 'cyan'),
+      {
+        kind: 'details',
+        rows: STATS.map((stat) => ({ label: stat.value, value: stat.label })),
+        labelWidth: 6,
+        labelColour: 'yellow',
+        gap: 1,
+      },
+      text('Passionate web developer creating amazing digital experiences.', undefined, 1),
+      heading('Services', 1),
+      text(SERVICES.join(' · '), 'cyan'),
+      contents([pageEntry('Technologies', PAGE.technologies), CV_ENTRY], 1),
+    ],
+  };
+}
+
+function technologiesPage(technologies: Technology[]): TtPage {
+  const width = Math.max(...technologies.map((t) => t.name.length));
+  const blocks: TtBlock[] = [text('The tools and frameworks I work with', 'cyan')];
+  for (const category of Object.values(TechCategory)) {
+    const items = technologies.filter((t) => t.category === category).map((t) => t.name);
+    if (items.length) blocks.push(heading(category, 1), { kind: 'columns', items, width });
+  }
+  return {
+    number: PAGE.technologies,
+    title: 'Technologies',
+    band: 'blue',
+    titleColour: 'yellow',
+    parent: PAGE.about,
+    next: PAGE.contact,
+    blocks,
+  };
+}
+
+function contactPage(dev: Developer): TtPage {
+  const reach: TtDetail[] = [];
+  if (dev.email) reach.push({ label: 'Email', value: dev.email, link: { href: `mailto:${dev.email}` } });
+  if (dev.phone) {
+    reach.push({ label: 'Phone', value: dev.phone, link: { href: `tel:${dev.phone.replace(/\s+/g, '')}` } });
+  }
+  if (dev.location) reach.push({ label: 'Location', value: dev.location });
+
+  const social: TtDetail[] = [];
+  if (dev.social.github) {
+    social.push({ label: 'GitHub', value: stripScheme(dev.social.github), link: { href: dev.social.github } });
+  }
+  if (dev.social.linkedin) {
+    social.push({
+      label: 'LinkedIn',
+      value: stripScheme(dev.social.linkedin),
+      link: { href: dev.social.linkedin },
+    });
   }
 
-  private technologiesPage(technologies: Technology[]): TtPageSource {
-    const blocks: TtBlock[] = [
-      blank(),
-      text('The tools and frameworks I work with', { fg: 'cyan' }),
-    ];
-    const longest = Math.max(...technologies.map((t) => t.name.length));
-    for (const category of Object.values(TechCategory)) {
-      const names = technologies.filter((t) => t.category === category).map((t) => t.name);
-      if (names.length) blocks.push(blank(), heading(category), columns(names, 3, 'white', longest));
-    }
-    return {
-      number: PAGE.technologies,
-      title: 'Technologies',
-      band: 'blue',
-      titleFg: 'yellow',
-      parent: PAGE.about,
-      next: PAGE.contact,
-      blocks,
-    };
-  }
-
-  private contactPage(dev: Developer): TtPageSource {
-    const blocks: TtBlock[] = [
-      blank(),
-      text("Let's build something great together", { fg: 'cyan' }),
-      blank(),
-    ];
-    if (dev.email) {
-      blocks.push(keyValue('Email', dev.email, { link: { href: `mailto:${dev.email}` } }));
-    }
-    if (dev.phone) {
-      blocks.push(
-        keyValue('Phone', dev.phone, { link: { href: `tel:${dev.phone.replace(/\s+/g, '')}` } }),
-      );
-    }
-    if (dev.location) blocks.push(keyValue('Location', dev.location));
-    blocks.push(blank(), heading('Follow me on social media'));
-    if (dev.social.github) {
-      blocks.push(
-        keyValue('GitHub', stripScheme(dev.social.github), { link: { href: dev.social.github } }),
-      );
-    }
-    if (dev.social.linkedin) {
-      blocks.push(
-        keyValue('LinkedIn', stripScheme(dev.social.linkedin), {
-          link: { href: dev.social.linkedin },
-        }),
-      );
-    }
-    blocks.push(
-      blank(),
-      text('Working for Axxes IT Consultancy.'),
+  return {
+    number: PAGE.contact,
+    title: 'Get In Touch',
+    band: 'blue',
+    titleColour: 'yellow',
+    parent: PAGE.index,
+    next: PAGE.message,
+    blocks: [
+      text("Let's build something great together", 'cyan'),
+      details(reach, 1),
+      heading('Follow me on social media', 1),
+      details(social),
+      text('Working for Axxes IT Consultancy.', undefined, 1),
       text('Response time within 24 hours.'),
-      blank(),
-      leader('Send Message', { page: PAGE.message }, String(PAGE.message)),
-      leader('Download CV', CV, 'PDF'),
-    );
-    return {
-      number: PAGE.contact,
-      title: 'Get In Touch',
-      band: 'blue',
-      titleFg: 'yellow',
-      parent: PAGE.index,
-      next: PAGE.message,
-      blocks,
-    };
-  }
-
-  private messagePage(): TtPageSource {
-    return {
-      number: PAGE.message,
-      title: 'Send Message',
-      band: 'blue',
-      titleFg: 'yellow',
-      parent: PAGE.contact,
-      form: 'contact',
-      blocks: [],
-    };
-  }
+      contents([pageEntry('Send Message', PAGE.message), CV_ENTRY], 1),
+    ],
+  };
 }
 
-// Desktop pages are split into 40x25 sub-pages; on a phone grid the page is
-// one continuous scroll, so there's nothing to flip through.
-function compose(source: TtPageSource, cols: number): TtPage {
-  const { blocks, ...meta } = source;
-  const titleRows = source.masthead ? blockHeight(source.masthead) : 2;
-  const capacity = cols === COLS ? contentCapacity(titleRows) : Infinity;
-  return { ...meta, subPages: paginate(blocks, capacity) };
+function messagePage(): TtPage {
+  return {
+    number: PAGE.message,
+    title: 'Send Message',
+    band: 'blue',
+    titleColour: 'yellow',
+    parent: PAGE.contact,
+    form: 'contact',
+    blocks: [],
+  };
 }
 
-// Several short paragraphs that read as one item (and never split).
-function stack(tag: 'li' | 'p', parts: TtBlock[]): TtBlock {
-  return { tag, keepTogether: true, rows: parts.flatMap((p) => p.rows) };
-}
+// Formatting -----------------------------------------------------------------
 
 function stripScheme(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');

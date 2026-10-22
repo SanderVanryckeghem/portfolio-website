@@ -1,6 +1,5 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { PAGE, TeletextPagesService } from './teletext-pages';
-import { COLS } from '../utils/teletext-layout';
 
 // Old single-page section anchors keep working as links into the new pages.
 const LEGACY_ANCHORS: Record<string, number> = {
@@ -48,19 +47,13 @@ export class TeletextNavService {
   // Bumped on every user-initiated page change so the screen can move focus.
   readonly navigations = signal(0);
 
-  // Width of the character grid: 40 on desktop, fewer (larger text) on phones.
-  readonly columns = signal(COLS);
+  // How many screens the current page needs. The browser lays the page out,
+  // so the screen component measures this and reports it here.
+  readonly subCount = signal(1);
 
   readonly page = computed(
-    () =>
-      this.pagesService.get(this.pageNumber(), this.columns()) ??
-      this.pagesService.notFound(this.pageNumber(), this.columns()),
+    () => this.pagesService.get(this.pageNumber()) ?? this.pagesService.notFound(this.pageNumber()),
   );
-  readonly subCount = computed(() => this.page().subPages.length);
-  readonly subPage = computed(() => {
-    const subPages = this.page().subPages;
-    return subPages[Math.min(this.subIndex(), subPages.length - 1)] ?? [];
-  });
 
   readonly requested = computed(() => {
     const entry = this.entry();
@@ -146,6 +139,20 @@ export class TeletextNavService {
     this.entry.set('');
   }
 
+  // The visible sub-page changed without a navigation (e.g. Tab moved focus
+  // onto a link further down the page): follow it in the URL only.
+  syncSub(sub: number): void {
+    if (sub === this.subIndex()) return;
+    this.subIndex.set(sub);
+    window.history.replaceState(null, '', hashFor({ page: this.pageNumber(), sub }));
+  }
+
+  // Called once the page has been laid out and its number of sub-pages is known.
+  setSubCount(count: number): void {
+    this.subCount.set(count);
+    if (this.subIndex() > count - 1) this.syncSub(count - 1);
+  }
+
   toggleScanlines(): void {
     this.scanlines.update((on) => !on);
     try {
@@ -167,7 +174,8 @@ export class TeletextNavService {
 
   private show(page: number, sub: number, userInitiated: boolean): void {
     this.pageNumber.set(page);
-    this.subIndex.set(Math.max(0, Math.min(sub, this.subCount() - 1)));
+    // Clamped by setSubCount() once the new page has been measured.
+    this.subIndex.set(Math.max(0, sub));
     this.rolling.set(page);
     this.searching.set(null);
     if (userInitiated) this.navigations.update((n) => n + 1);
